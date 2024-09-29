@@ -1,0 +1,8 @@
+{
+  "/products*": "/products",
+  "/featured_products*": "/featured_products",
+  "/orders*": "/orders",
+  "/users*": "/users",
+  "/wishlists*": "/wishlists"
+}
+  

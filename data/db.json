@@ -1,0 +1,286 @@
+{
+  "friendsAndFamily": [
+    {
+      "userId": 1,
+      "friendId": 2,
+      "addedAt": "2024-09-25T19:02:30.508Z",
+      "id": 1
+    }
+  ],
+  "products": [
+    {
+      "id": 10001,
+      "name": "The Legend of Zynthara",
+      "overview": "An epic action-adventure game where you uncover the lost relics of Zynthara.",
+      "long_description": "Explore vast lands, battle ancient enemies, and discover the secret of Zynthara's power in this action-packed adventure. Featuring stunning visuals and immersive gameplay.",
+      "price": 59,
+      "poster": "/assets/images/10001.avif",
+      "image_local": "/assets/images/10001.avif",
+      "rating": 5,
+      "in_stock": true,
+      "size": 20,
+      "best_seller": true,
+      "recommendations": [
+        10001,
+        10004,
+        10005
+      ]
+    },
+    {
+      "id": 10002,
+      "name": "Cyber Assault: Neon Wars",
+      "overview": "Enter the world of Neon Wars, a futuristic cyber battle royale game.",
+      "long_description": "Gear up and join the Neon Wars. Choose your character, customize your weapons, and fight to become the ultimate cyber warrior in this intense multiplayer experience.",
+      "price": 49,
+      "poster": "/assets/images/10002.avif",
+      "image_local": "/assets/images/10002.avif",
+      "rating": 4,
+      "in_stock": true,
+      "size": 15,
+      "best_seller": false,
+      "recommendations": [
+        10001,
+        10004,
+        10005
+      ]
+    },
+    {
+      "id": 10003,
+      "name": "Fantasy Kingdom: Battle for Power",
+      "overview": "Build your kingdom and defend it from invaders in this strategy game.",
+      "long_description": "Lead your army, build defenses, and expand your territory in Fantasy Kingdom. With various battle modes and resource management, the battle for the throne has just begun.",
+      "price": 39,
+      "poster": "/assets/images/10003.avif",
+      "image_local": "/assets/images/10003.avif",
+      "rating": 4,
+      "in_stock": true,
+      "size": 10,
+      "best_seller": false,
+      "recommendations": [
+        10001,
+        10005,
+        10002
+      ]
+    },
+    {
+      "id": 10004,
+      "name": "Galactic Raiders",
+      "overview": "A thrilling space exploration and combat game set in distant galaxies.",
+      "long_description": "Join the Galactic Raiders in a quest to explore unknown planets, trade resources, and engage in epic space battles. Your journey to conquer the stars starts here.",
+      "price": 69,
+      "poster": "/assets/images/10004.avif",
+      "image_local": "/assets/images/10004.avif",
+      "rating": 5,
+      "in_stock": true,
+      "size": 18,
+      "best_seller": true,
+      "recommendations": [
+        10001,
+        10003,
+        10005
+      ]
+    },
+    {
+      "id": 10005,
+      "name": "Mystic Quest: Shadows of the Lost Realm",
+      "overview": "Embark on a journey to save the lost realm in this RPG.",
+      "long_description": "Experience the world of Mystic Quest where magic and mystery collide. Build your party, learn powerful spells, and defeat ancient evils lurking in the shadows.",
+      "price": 59,
+      "poster": "/assets/images/10005.avif",
+      "image_local": "/assets/images/10005.avif",
+      "rating": 4,
+      "in_stock": true,
+      "size": 12,
+      "best_seller": false,
+      "recommendations": [
+        10002,
+        10004,
+        10003
+      ]
+    }
+  ],
+  "featured_products": [
+    {
+      "id": 10001,
+      "name": "The Legend of Zynthara",
+      "overview": "An epic action-adventure game where you uncover the lost relics of Zynthara.",
+      "long_description": "Explore vast lands, battle ancient enemies, and discover the secret of Zynthara's power in this action-packed adventure. Featuring stunning visuals and immersive gameplay.",
+      "price": 59,
+      "poster": "/assets/images/10001.avif",
+      "image_local": "/assets/images/10001.avif",
+      "rating": 5,
+      "in_stock": true,
+      "size": 20,
+      "best_seller": true
+    },
+    {
+      "id": 10004,
+      "name": "Galactic Raiders",
+      "overview": "A thrilling space exploration and combat game set in distant galaxies.",
+      "long_description": "Join the Galactic Raiders in a quest to explore unknown planets, trade resources, and engage in epic space battles. Your journey to conquer the stars starts here.",
+      "price": 69,
+      "poster": "/assets/images/10004.avif",
+      "image_local": "/assets/images/10004.avif",
+      "rating": 5,
+      "in_stock": true,
+      "size": 18,
+      "best_seller": true
+    }
+  ],
+  "orders": [
+    {
+      "cartList": [
+        {
+          "id": 10002,
+          "name": "Cyber Assault: Neon Wars",
+          "overview": "Enter the world of Neon Wars, a futuristic cyber battle royale game.",
+          "long_description": "Gear up and join the Neon Wars. Choose your character, customize your weapons, and fight to become the ultimate cyber warrior in this intense multiplayer experience.",
+          "price": 49,
+          "poster": "/assets/images/10002.avif",
+          "image_local": "/assets/images/10002.avif",
+          "rating": 4,
+          "in_stock": true,
+          "size": 15,
+          "best_seller": false
+        }
+      ],
+      "total": 49,
+      "user": {
+        "email": "xd18@yahoo.com",
+        "password": "$2a$10$DFi25BLQ7wsGjjrvVOIf8O1rOSijl.zPalZ7vFMIN0O9R0uJpJG7G",
+        "name": "Xiangdong Li",
+        "id": 2,
+        "gender": "",
+        "birthDate": "",
+        "promotionalEmails": false
+      },
+      "address": {
+        "country": "CA",
+        "firstName": "Xiangdong",
+        "lastName": "Li",
+        "phoneNumber": "2042300278",
+        "streetAddress": "645 Main St",
+        "aptSuite": "",
+        "city": "Waterloo",
+        "province": "Ontario",
+        "postalCode": "N2KOAO",
+        "deliveryInstructions": "",
+        "sameAsMailing": true,
+        "userId": 2,
+        "id": 1
+      },
+      "wishlist": [],
+      "id": 1
+    },
+    {
+      "cartList": [
+        {
+          "id": 10001,
+          "name": "The Legend of Zynthara",
+          "overview": "An epic action-adventure game where you uncover the lost relics of Zynthara.",
+          "long_description": "Explore vast lands, battle ancient enemies, and discover the secret of Zynthara's power in this action-packed adventure. Featuring stunning visuals and immersive gameplay.",
+          "price": 59,
+          "poster": "/assets/images/10001.avif",
+          "image_local": "/assets/images/10001.avif",
+          "rating": 5,
+          "in_stock": true,
+          "size": 20,
+          "best_seller": true,
+          "recommendations": [
+            10001,
+            10004,
+            10005
+          ]
+        }
+      ],
+      "total": 59,
+      "user": {
+        "email": "xd18@yahoo.com",
+        "password": "$2a$10$DFi25BLQ7wsGjjrvVOIf8O1rOSijl.zPalZ7vFMIN0O9R0uJpJG7G",
+        "name": "Xiangdong Li",
+        "id": 2,
+        "gender": "",
+        "birthDate": "",
+        "promotionalEmails": false
+      },
+      "address": {
+        "country": "CA",
+        "firstName": "Xiangdong",
+        "lastName": "Li",
+        "phoneNumber": "2042300278",
+        "streetAddress": "645 Main St",
+        "aptSuite": "",
+        "city": "Waterloo",
+        "province": "Ontario",
+        "postalCode": "N2KOAO",
+        "deliveryInstructions": "",
+        "sameAsMailing": true,
+        "userId": 2,
+        "id": 2
+      },
+      "wishlist": [],
+      "status": "Pending",
+      "id": 2
+    }
+  ],
+  "users": [
+    {
+      "email": "xd18@me.com",
+      "password": "$2a$10$SfxGUcmSdItATkovJdR78u.7V2NwzU.9m7YU3JfuYBIR/iXnbP43y",
+      "name": "Xiangdong Li",
+      "id": 1,
+      "gender": "",
+      "birthDate": "",
+      "promotionalEmails": false
+    },
+    {
+      "email": "xd18@yahoo.com",
+      "password": "$2a$10$DFi25BLQ7wsGjjrvVOIf8O1rOSijl.zPalZ7vFMIN0O9R0uJpJG7G",
+      "name": "Xiangdong Li",
+      "id": 2,
+      "gender": "",
+      "birthDate": "",
+      "promotionalEmails": false
+    }
+  ],
+  "wishlists": [
+    {
+      "userId": 2,
+      "productId": 10001,
+      "addedAt": "2024-09-25T19:02:30.508Z",
+      "id": 1
+    }
+  ],
+  "userAddresses": [
+    {
+      "country": "CA",
+      "firstName": "Xiangdong",
+      "lastName": "Li",
+      "phoneNumber": "2042300278",
+      "streetAddress": "645 Main St",
+      "aptSuite": "",
+      "city": "Waterloo",
+      "province": "Ontario",
+      "postalCode": "N2KOAO",
+      "deliveryInstructions": "",
+      "sameAsMailing": true,
+      "userId": 2,
+      "id": 1
+    },
+    {
+      "country": "CA",
+      "firstName": "Xiangdong",
+      "lastName": "Li",
+      "phoneNumber": "2042300278",
+      "streetAddress": "645 Main St",
+      "aptSuite": "",
+      "city": "Waterloo",
+      "province": "Ontario",
+      "postalCode": "N2KOAO",
+      "deliveryInstructions": "",
+      "sameAsMailing": true,
+      "userId": 2,
+      "id": 2
+    }
+  ]
+}
