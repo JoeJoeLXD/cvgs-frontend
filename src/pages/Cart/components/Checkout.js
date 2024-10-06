@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useCart, useWishlist } from "../../../context";
-import { createOrder, getUser, saveAddress } from "../../../services";
+import { createOrder, getUserProfile, saveAddress } from "../../../services";
 import AddressForm from "../../../components/Elements/AddressForm";
 
 const Checkout = ({ setCheckout }) => {
@@ -25,7 +25,7 @@ const Checkout = ({ setCheckout }) => {
 
     async function fetchData() {
       try {
-        const data = await getUser();
+        const data = await getUserProfile();
         setUser(data);
       } catch (error) {
         toast.error(error.message, { closeButton: true, position: "bottom-center" });

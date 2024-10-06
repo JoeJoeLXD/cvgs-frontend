@@ -3,7 +3,7 @@
 export { login, register, logout, resetPassword } from "./authService";
 export {
   getSession,
-  getUser,
+  getUserProfile,
   getUserOrders,
   createOrder,
   saveAddress,

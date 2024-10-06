@@ -19,6 +19,7 @@ const Header = () => {
   const [token, setToken] = useState(getSession("token"));
   const [userEmail, setUserEmail] = useState(getSession("email"));
   const [userRole, setUserRole] = useState(getSession("role"));
+  const [displayName, setDisplayName] = useState(getSession("displayName"));
 
   // Sync darkMode preference with localStorage
   useEffect(() => {
@@ -37,6 +38,7 @@ const Header = () => {
     setToken(getSession("token"));
     setUserEmail(getSession("email"));
     setUserRole(getSession("role"));
+    setDisplayName(getSession("displayName"));
   });
 
   return (
@@ -52,9 +54,9 @@ const Header = () => {
         </div>
 
         {/* Welcome Message */}
-        {token && userEmail && (
+        {token && displayName && (
           <div className="text-gray-700 dark:text-white">
-            Welcome, {userEmail}
+            Welcome, {displayName}
           </div>
         )}
 
@@ -125,7 +127,7 @@ const Header = () => {
           </div>
 
           {/* Admin Icon - Only for Admin Users */}
-          {userRole === "admin" && (
+          {userRole!=null && userRole.toLowerCase() === "admin" && (
             <div className="relative group">
               <Link
                 to="/admin"

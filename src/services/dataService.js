@@ -1,17 +1,19 @@
 // src/services/dataService.js 
 
+import { toast } from "react-toastify";
+
 // Update user profile
 export async function updateUser(userId, updatedProfile) {
+ 
   const token = getSession("token");
 
   if (!token || !userId) {
     throw new Error("User is not authenticated or missing userId");
   }
-
-  const url = `http://localhost:8000/users/${userId}`;
-
+  const url = `https://localhost:7245/api/UserProfiles/${userId}`;
+  
   const requestOptions = {
-    method: "PATCH",
+    method: "PUT",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
@@ -21,6 +23,7 @@ export async function updateUser(userId, updatedProfile) {
 
   try {
     const response = await fetch(url, requestOptions);
+    ;
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -31,6 +34,7 @@ export async function updateUser(userId, updatedProfile) {
     return data;
   } catch (error) {
     console.error("Error updating user profile:", error);
+    alert(error);
     throw error;
   }
 }
@@ -41,21 +45,21 @@ export function getSession(key) {
 }
 
 // Fetch user details
-export async function getUser() {
+export async function getUserProfile() {
   const token = getSession("token");
-  const cbid = getSession("cbid");
-  //const userRole = getSession("role");
+  const userId = getSession("userId");
 
-  if (!token || !cbid) {
+  if (!token || !userId) {
     throw new Error("User is not authenticated");
   }
 
-  const url = `http://localhost:8000/users`; // JSON Server endpoint
+  const url = `https://localhost:7245/api/UserProfiles/${userId}`; // Endpoint to get user profile
 
   const requestOptions = {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json" // Optional: Set content type if needed
     },
   };
 
@@ -67,21 +71,21 @@ export async function getUser() {
       throw new Error(`Error ${response.status}: ${errorText}`);
     }
 
-    const data = await response.json();
-    const user = data.find((user) => user.id === Number(cbid));
-    return user;
+    const data = await response.json(); // Directly parse the response
+    return data; // Return the user profile data
   } catch (error) {
     console.error("Error fetching user data:", error);
     throw error;
   }
 }
 
+
 // Fetch the user's orders
 export async function getUserOrders() {
   const token = getSession("token");
-  const cbid = getSession("cbid");
+  const userId = getSession("userId");
 
-  if (!token || !cbid) {
+  if (!token || !userId) {
     throw new Error("User is not authenticated");
   }
 
@@ -103,7 +107,7 @@ export async function getUserOrders() {
     }
 
     const data = await response.json();
-    const orders = data.filter((order) => order.user.id === Number(cbid));
+    const orders = data.filter((order) => order.user.id === Number(userId));
     return orders;
   } catch (error) {
     console.error("Error fetching user orders:", error);

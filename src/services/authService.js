@@ -1,4 +1,10 @@
-// src/services/authService.js
+import { jwtDecode } from 'jwt-decode'; // Correct import statement
+
+// Define ClaimTypes if not already imported
+const ClaimTypes = {
+  NameIdentifier: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier",
+  Role: "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+};
 
 // Simulated function to reset user password
 export async function resetPassword(email) {
@@ -14,75 +20,62 @@ export async function resetPassword(email) {
   });
 }
 
-// Function to log in a user
 export async function login(authDetail) {
   const { email, password } = authDetail;
 
-  // Temporary hardcoded admin credentials for testing
-  const hardcodedAdmin = {
-    email: "admin@example.com",
-    password: "admin123",
-    role: "admin", // Set the role as 'admin'
+  const requestOptions = {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }), // Send email and password
   };
 
-  // Check if the credentials match the hardcoded admin
-  if (email === hardcodedAdmin.email && password === hardcodedAdmin.password) {
-    // Create a simulated response data for admin
-    const data = {
-      accessToken: "adminToken123", // Simulated token
+  try {
+    const response = await fetch(
+      "https://localhost:7245/api/Auth/login", // New API endpoint
+      requestOptions
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      const error = new Error(errorData.error || response.statusText);
+      error.status = response.status;
+      throw error;
+    }
+
+    const responseData = await response.json();
+
+    // Extract the token from the response
+    const token = responseData.token;
+
+    // Decode the JWT token
+    const decodedToken = jwtDecode(token);
+
+    // Prepare the user data
+    const userData = {
+      accessToken: token, // Store the JWT token
       user: {
-        id: "1", // Simulated user ID
-        email: hardcodedAdmin.email,
-        role: hardcodedAdmin.role,
+        id: decodedToken[ClaimTypes.NameIdentifier], // Get user ID from the decoded token
+        email: decodedToken.sub, // Get email from the decoded token
+        role: decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || "member", // Get role from the decoded token
+        displayName: decodedToken.DisplayName || "No name", // Get display name from the decoded token
       },
     };
 
-    // Store the admin user details in session storage
-    sessionStorage.setItem("token", data.accessToken);
-    sessionStorage.setItem("cbid", data.user.id);
-    sessionStorage.setItem("email", data.user.email);
-    sessionStorage.setItem("role", data.user.role);
-
-    return data; // Return the simulated data
-  } else {
-    // Proceed with the regular login for other users via backend API
-    const requestOptions = {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(authDetail),
-    };
-
-    try {
-      const response = await fetch(
-        `${process.env.REACT_APP_HOST}/login`,
-        requestOptions
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        const error = new Error(errorData.error || response.statusText);
-        error.status = response.status;
-        throw error;
-      }
-
-      const data = await response.json();
-
-      console.log(data);
-
-      // Store authentication details in session storage
-      if (data.accessToken) {
-        sessionStorage.setItem("token", data.accessToken); // Store token as string
-        sessionStorage.setItem("cbid", data.user.id); // Store user ID as string
-        sessionStorage.setItem("email", data.user.email); // Store user email as string
-        sessionStorage.setItem("role", data.user.role || "user"); // Store user role (default to 'user')
-      }
-
-      return data;
-    } catch (error) {
-      throw error;
+    // Store authentication details in session storage
+    if (userData.accessToken) {
+      sessionStorage.setItem("token", userData.accessToken); // Store token as string
+      sessionStorage.setItem("userId", userData.user.id); // Store user ID as string
+      sessionStorage.setItem("email", userData.user.email); // Store user email as string
+      sessionStorage.setItem("role", userData.user.role); // Store user role
+      sessionStorage.setItem("displayName", userData.user.displayName); // Store display name
     }
+
+    return userData; // Return user data
+  } catch (error) {
+    throw error; // Propagate the error
   }
 }
+
 
 // Function to register a new user
 export async function register(authDetail) {
@@ -94,7 +87,7 @@ export async function register(authDetail) {
 
   try {
     const response = await fetch(
-      `${process.env.REACT_APP_HOST}/register`,
+      `https://localhost:7245/api/Auth/register`,
       requestOptions
     );
 
@@ -104,31 +97,49 @@ export async function register(authDetail) {
       error.status = response.status;
       throw error;
     }
+    
+    const responseData = await response.json();
 
-    const data = await response.json();
+    // Extract the token from the response
+    const token = responseData.token;
+console.log('token:'+token);
+    // Decode the JWT token
+    const decodedToken = jwtDecode(token);
 
-    console.log(data);
 
-    // Storing authentication details in session storage
-    if (data.accessToken) {
-      sessionStorage.setItem("token", data.accessToken); // Store token as string
-      sessionStorage.setItem("cbid", data.user.id); // Store user ID as string
-      sessionStorage.setItem("email", data.user.email); // Store user email as string
-      sessionStorage.setItem("role", data.user.role); // Store user role (admin or user)
+    // Prepare the user data
+    const userData = {
+      accessToken: token, // Store the JWT token
+      user: {
+        id: decodedToken[ClaimTypes.NameIdentifier], // Get user ID from the decoded token
+        email: decodedToken.sub, // Get email from the decoded token
+        role: decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || "member", // Get role from the decoded token
+        displayName: decodedToken.DisplayName || "No name", // Get display name from the decoded token
+      },
+    };
+
+    // Store authentication details in session storage
+    if (userData.accessToken) {
+      sessionStorage.setItem("token", userData.accessToken); // Store token as string
+      sessionStorage.setItem("userId", userData.user.id); // Store user ID as string
+      sessionStorage.setItem("email", userData.user.email); // Store user email as string
+      sessionStorage.setItem("role", userData.user.role); // Store user role
+      sessionStorage.setItem("displayName", userData.user.displayName); // Store display name
     }
 
-    return data;
+    return userData; // Return user data
   } catch (error) {
-    throw error;
+    throw error; // Propagate the error
   }
 }
 
 // Function to log out the user
 export function logout() {
   sessionStorage.removeItem("token");
-  sessionStorage.removeItem("cbid");
+  sessionStorage.removeItem("userId");
   sessionStorage.removeItem("email"); // Clear user email from session
   sessionStorage.removeItem("role"); // Clear user role from session
+  sessionStorage.removeItem("displayName"); // Clear user role from session
 }
 
 // Utility function to get items from session storage
