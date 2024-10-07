@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 const AdminEvents = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [newEvent, setNewEvent] = useState({ name: '', date: '', description: '' });
+  const [newEvent, setNewEvent] = useState({ eventName: '', eventDateTime: '', eventDescription: '' });
   const [editingEvent, setEditingEvent] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -13,7 +13,7 @@ const AdminEvents = () => {
   useEffect(() => {
     async function fetchEvents() {
       try {
-        const response = await fetch('/api/events'); // Ensure this endpoint is correct
+        const response = await fetch('https://localhost:7245/api/Events'); // Ensure this endpoint is correct
         const contentType = response.headers.get('content-type');
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -37,7 +37,7 @@ const AdminEvents = () => {
   const handleAddEvent = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/events', {
+      const response = await fetch('https://localhost:7245/api/events', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -63,7 +63,7 @@ const AdminEvents = () => {
   // Handle editing an event
   const handleEditEvent = async (eventId) => {
     try {
-      const response = await fetch(`/api/events/${eventId}`, {
+      const response = await fetch(`https://localhost:7245/api/events/${eventId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -91,7 +91,7 @@ const AdminEvents = () => {
   // Handle deleting an event
   const handleDeleteEvent = async (eventId) => {
     try {
-      const response = await fetch(`/api/events/${eventId}`, {
+      const response = await fetch(`https://localhost:7245/api/events/${eventId}`, {
         method: 'DELETE',
       });
       if (!response.ok) {
@@ -125,8 +125,8 @@ const AdminEvents = () => {
                 type="text"
                 id="eventName"
                 className="border rounded p-2 w-full"
-                value={newEvent.name}
-                onChange={(e) => setNewEvent({ ...newEvent, name: e.target.value })}
+                value={newEvent.eventName}
+                onChange={(e) => setNewEvent({ ...newEvent, eventName: e.target.value })}
                 required
               />
             </div>
@@ -138,8 +138,8 @@ const AdminEvents = () => {
                 type="date"
                 id="eventDate"
                 className="border rounded p-2 w-full"
-                value={newEvent.date}
-                onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })}
+                value={newEvent.eventDateTime}
+                onChange={(e) => setNewEvent({ ...newEvent, eventDateTime: e.target.value })}
                 required
               />
             </div>
@@ -150,8 +150,8 @@ const AdminEvents = () => {
               <textarea
                 id="eventDescription"
                 className="border rounded p-2 w-full"
-                value={newEvent.description}
-                onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
+                value={newEvent.eventDescription}
+                onChange={(e) => setNewEvent({ ...newEvent, eventDescription: e.target.value })}
                 required
               />
             </div>
@@ -178,9 +178,9 @@ const AdminEvents = () => {
                     key={event.id}
                     className="border border-gray-300 md:border-none block md:table-row"
                   >
-                    <td className="p-2">{event.name}</td>
-                    <td className="p-2">{event.date}</td>
-                    <td className="p-2">{event.description}</td>
+                    <td className="p-2">{event.eventName}</td>
+                    <td className="p-2">{event.eventDateTime}</td>
+                    <td className="p-2">{event.eventDescription}</td>
                     <td className="p-2 flex space-x-2">
                       <button
                         className="bg-yellow-500 text-white px-4 py-1 rounded"
@@ -221,9 +221,9 @@ const AdminEvents = () => {
                     type="text"
                     id="editEventName"
                     className="border rounded p-2 w-full"
-                    value={editingEvent.name}
+                    value={editingEvent.eventName}
                     onChange={(e) =>
-                      setEditingEvent({ ...editingEvent, name: e.target.value })
+                      setEditingEvent({ ...editingEvent, eventName: e.target.value })
                     }
                     required
                   />
@@ -236,9 +236,9 @@ const AdminEvents = () => {
                     type="date"
                     id="editEventDate"
                     className="border rounded p-2 w-full"
-                    value={editingEvent.date}
+                    value={editingEvent.eventDateTime}
                     onChange={(e) =>
-                      setEditingEvent({ ...editingEvent, date: e.target.value })
+                      setEditingEvent({ ...editingEvent, eventDateTime: e.target.value })
                     }
                     required
                   />
@@ -250,9 +250,9 @@ const AdminEvents = () => {
                   <textarea
                     id="editEventDescription"
                     className="border rounded p-2 w-full"
-                    value={editingEvent.description}
+                    value={editingEvent.eventDescription}
                     onChange={(e) =>
-                      setEditingEvent({ ...editingEvent, description: e.target.value })
+                      setEditingEvent({ ...editingEvent, eventDescription: e.target.value })
                     }
                     required
                   />

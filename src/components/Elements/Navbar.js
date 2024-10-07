@@ -20,7 +20,7 @@ const Navbar = () => {
         </button>
         <div className={`${navbarOpen ? "block" : "hidden"} lg:flex lg:items-center`}>
           <Link to="/products" className="text-white px-3 py-2 hover:bg-gray-700 rounded">
-            Products
+            Games
           </Link>
           <Link to="/wishlist" className="text-white px-3 py-2 hover:bg-gray-700 rounded">
             Wishlist

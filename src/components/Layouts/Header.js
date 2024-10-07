@@ -130,7 +130,7 @@ const Header = () => {
           {userRole!=null && userRole.toLowerCase() === "admin" && (
             <div className="relative group">
               <Link
-                to="/admin"
+                to="/admin/"
                 className="cursor-pointer text-xl text-gray-700 dark:text-white"
               >
                 <i className="bi bi-gear-fill"></i>

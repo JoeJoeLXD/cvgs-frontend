@@ -12,7 +12,8 @@ export const ProtectedRoute = ({ children, isAdmin = false }) => {
   }
 
   // If admin access is required but the user is not an admin, redirect to unauthorized page
-  if (isAdmin && userRole !== "admin") {
+  if (isAdmin && userRole.toLowerCase() !== "admin") {
+  
     return <Navigate to="/unauthorized" />;
   }
 
