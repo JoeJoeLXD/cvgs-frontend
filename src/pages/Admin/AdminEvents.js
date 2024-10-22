@@ -57,7 +57,7 @@ const AdminEvents = () => {
       });
 
       if (!response.ok) throw new Error("Failed to save event.");
-      
+
       const data = await response.json();
 
       if (editingEvent) {
@@ -103,19 +103,32 @@ const AdminEvents = () => {
     if (!window.confirm("Are you sure you want to delete this event?")) return;
 
     try {
-      const response = await fetch(`https://localhost:7245/api/Events/${eventId}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `https://localhost:7245/api/Events/${eventId}`,
+        {
+          method: "DELETE",
+        }
+      );
 
       if (!response.ok) throw new Error("Failed to delete event.");
 
-      setEvents((prevEvents) => prevEvents.filter((event) => event.id !== eventId));
+      setEvents((prevEvents) =>
+        prevEvents.filter((event) => event.id !== eventId)
+      );
       toast.success("Event deleted successfully!");
     } catch (error) {
       console.error("Error deleting event:", error);
       toast.error("Failed to delete event. Please try again.");
     }
   };
+
+  // Filter for upcoming events
+  const upcomingEvents = events.filter(
+    (event) => new Date(event.eventDateTime) > new Date()
+  );
+
+  // Get today's date in 'YYYY-MM-DD' format to use for date input restrictions
+  const today = new Date().toISOString().split("T")[0];
 
   if (loading) {
     return <div>Loading events...</div>; // Display loading message
@@ -130,21 +143,36 @@ const AdminEvents = () => {
         Add New Event
       </button>
 
-      <h2 className="text-2xl font-semibold mb-6 dark:text-white">Upcoming Events</h2>
-      {events.length > 0 ? (
+      <h2 className="text-2xl font-semibold mb-6 dark:text-white">
+        Upcoming Events
+      </h2>
+      {upcomingEvents.length > 0 ? (
         <table className="min-w-full border border-gray-300 dark:border-gray-600">
           <thead className="bg-gray-100 dark:bg-gray-700">
             <tr>
-              <th className="p-4 border text-left font-semibold dark:text-gray-300">Event Name</th>
-              <th className="p-4 border text-left font-semibold dark:text-gray-300">Date</th>
-              <th className="p-4 border text-left font-semibold dark:text-gray-300">Time</th>
-              <th className="p-4 border text-left font-semibold dark:text-gray-300">Description</th>
-              <th className="p-4 border text-left font-semibold dark:text-gray-300">Actions</th>
+              <th className="p-4 border text-left font-semibold dark:text-gray-300">
+                Event Name
+              </th>
+              <th className="p-4 border text-left font-semibold dark:text-gray-300">
+                Date
+              </th>
+              <th className="p-4 border text-left font-semibold dark:text-gray-300">
+                Time
+              </th>
+              <th className="p-4 border text-left font-semibold dark:text-gray-300">
+                Description
+              </th>
+              <th className="p-4 border text-left font-semibold dark:text-gray-300">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
-            {events.map((event) => (
-              <tr key={event.id} className="hover:bg-gray-50 dark:hover:bg-gray-600">
+            {upcomingEvents.map((event) => (
+              <tr
+                key={event.id}
+                className="hover:bg-gray-50 dark:hover:bg-gray-600"
+              >
                 <td className="p-4 border dark:border-gray-600 dark:text-gray-200">
                   {event.eventName}
                 </td>
@@ -169,7 +197,7 @@ const AdminEvents = () => {
                       <i className="bi bi-pencil"></i>
                     </button>
                     <button
-                      className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 transition dark:bg-red-700 dark:hover:bg-red-600"
+                      className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 transition dark:bg-gray-400 dark:hover:bg-gary-600"
                       onClick={() => handleDeleteEvent(event.id)}
                     >
                       <i className="bi bi-trash"></i>
@@ -181,7 +209,7 @@ const AdminEvents = () => {
           </tbody>
         </table>
       ) : (
-        <p>No events available.</p>
+        <p>No upcoming events available.</p>
       )}
 
       {/* Modal Form for Add/Edit Event */}
@@ -193,7 +221,10 @@ const AdminEvents = () => {
             </h2>
             <form onSubmit={handleSaveEvent}>
               <div className="mb-4">
-                <label htmlFor="eventName" className="block text-sm font-medium dark:text-gray-200">
+                <label
+                  htmlFor="eventName"
+                  className="block text-sm font-medium dark:text-gray-200"
+                >
                   Event Name
                 </label>
                 <input
@@ -208,7 +239,10 @@ const AdminEvents = () => {
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="eventDate" className="block text-sm font-medium dark:text-gray-200">
+                <label
+                  htmlFor="eventDate"
+                  className="block text-sm font-medium dark:text-gray-200"
+                >
                   Event Date
                 </label>
                 <input
@@ -219,11 +253,15 @@ const AdminEvents = () => {
                   onChange={(e) =>
                     setNewEvent({ ...newEvent, eventDate: e.target.value })
                   }
+                  min={today} // Ensure future dates only
                   required
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="eventTime" className="block text-sm font-medium dark:text-gray-200">
+                <label
+                  htmlFor="eventTime"
+                  className="block text-sm font-medium dark:text-gray-200"
+                >
                   Event Time
                 </label>
                 <input
@@ -238,7 +276,10 @@ const AdminEvents = () => {
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="eventDescription" className="block text-sm font-medium dark:text-gray-200">
+                <label
+                  htmlFor="eventDescription"
+                  className="block text-sm font-medium dark:text-gray-200"
+                >
                   Event Description
                 </label>
                 <textarea
@@ -246,7 +287,10 @@ const AdminEvents = () => {
                   className="border rounded p-3 w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                   value={newEvent.eventDescription}
                   onChange={(e) =>
-                    setNewEvent({ ...newEvent, eventDescription: e.target.value })
+                    setNewEvent({
+                      ...newEvent,
+                      eventDescription: e.target.value,
+                    })
                   }
                   required
                 />
@@ -275,7 +319,3 @@ const AdminEvents = () => {
 };
 
 export default AdminEvents;
-
-
-
-
