@@ -9,16 +9,26 @@ const ClaimTypes = {
 // Simulated function to reset user password
 export async function resetPassword(email) {
   // Simulate an async delay, like a real API call
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if (email === "user@example.com") {
-        resolve({ message: "Password reset email sent" });
-      } else {
-        reject(new Error("Email not found"));
-      }
-    }, 1000); // Simulate 1 second delay
-  });
-}
+  // return new Promise((resolve, reject) => {
+  //   setTimeout(() => {
+  //     if (email === "user@example.com") {
+  //       resolve({ message: "Password reset email sent" });
+  //     } else {
+  //       reject(new Error("Email not found"));
+  //     }
+  //   }, 1000); // Simulate 1 second delay
+  // });
+    const response = await fetch('https://localhost:7245/api/Auth/forgot-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    });
+  return response;
+      
+};
+
 
 export async function login(authDetail) {
   const { email, password } = authDetail;
@@ -100,34 +110,34 @@ export async function register(authDetail) {
     
     const responseData = await response.json();
 
-    // Extract the token from the response
-    const token = responseData.token;
-console.log('token:'+token);
-    // Decode the JWT token
-    const decodedToken = jwtDecode(token);
+//     // Extract the token from the response
+//     const token = responseData.token;
+// console.log('token:'+token);
+//     // Decode the JWT token
+//     const decodedToken = jwtDecode(token);
 
 
-    // Prepare the user data
-    const userData = {
-      accessToken: token, // Store the JWT token
-      user: {
-        id: decodedToken[ClaimTypes.NameIdentifier], // Get user ID from the decoded token
-        email: decodedToken.sub, // Get email from the decoded token
-        role: decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || "member", // Get role from the decoded token
-        displayName: decodedToken.DisplayName || "No name", // Get display name from the decoded token
-      },
-    };
+//     // Prepare the user data
+//     const userData = {
+//       accessToken: token, // Store the JWT token
+//       user: {
+//         id: decodedToken[ClaimTypes.NameIdentifier], // Get user ID from the decoded token
+//         email: decodedToken.sub, // Get email from the decoded token
+//         role: decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || "member", // Get role from the decoded token
+//         displayName: decodedToken.DisplayName || "No name", // Get display name from the decoded token
+//       },
+//     };
 
-    // Store authentication details in session storage
-    if (userData.accessToken) {
-      sessionStorage.setItem("token", userData.accessToken); // Store token as string
-      sessionStorage.setItem("userId", userData.user.id); // Store user ID as string
-      sessionStorage.setItem("email", userData.user.email); // Store user email as string
-      sessionStorage.setItem("role", userData.user.role); // Store user role
-      sessionStorage.setItem("displayName", userData.user.displayName); // Store display name
-    }
+//     // Store authentication details in session storage
+//     if (userData.accessToken) {
+//       sessionStorage.setItem("token", userData.accessToken); // Store token as string
+//       sessionStorage.setItem("userId", userData.user.id); // Store user ID as string
+//       sessionStorage.setItem("email", userData.user.email); // Store user email as string
+//       sessionStorage.setItem("role", userData.user.role); // Store user role
+//       sessionStorage.setItem("displayName", userData.user.displayName); // Store display name
+//     }
 
-    return userData; // Return user data
+    return responseData; // Return response data
   } catch (error) {
     throw error; // Propagate the error
   }
