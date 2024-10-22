@@ -22,9 +22,9 @@ root.render(
               <PreferencesProvider>
                 <ScrollToTop />
                 <ToastContainer
-                  closeButton={false}
-                  autoClose={3000}
-                  position={"bottom-right"}
+                  closeButton={false} // Set to true if you want the close button
+                  autoClose={3000} // Adjust time as needed
+                  position={"bottom-right"} // Adjust position as needed
                 />
                 <App />
               </PreferencesProvider>
@@ -35,3 +35,4 @@ root.render(
     </Router>
   </React.StrictMode>
 );
+

@@ -1,280 +1,281 @@
 // src/pages/Admin/AdminEvents.js
-import React, { useState, useEffect } from 'react';
-
+import React, { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 
 const AdminEvents = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [newEvent, setNewEvent] = useState({ eventName: '', eventDateTime: '', eventDescription: '' });
-  const [editingEvent, setEditingEvent] = useState(null);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [showModal, setShowModal] = useState(false); // Modal visibility
+  const [editingEvent, setEditingEvent] = useState(null); // For editing event
 
-  // Fetch existing events from the server
+  // Default state for a new event or editing
+  const defaultEventState = {
+    eventName: "",
+    eventDate: "",
+    eventTime: "",
+    eventDescription: "",
+  };
+
+  const [newEvent, setNewEvent] = useState(defaultEventState); // Add/Edit form state
+
+  // Fetch existing events
   useEffect(() => {
     async function fetchEvents() {
       try {
-        const response = await fetch('https://localhost:7245/api/Events'); // Ensure this endpoint is correct
-        const contentType = response.headers.get('content-type');
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        } else if (contentType && contentType.indexOf('application/json') === -1) {
-          const text = await response.text();
-          throw new Error(`Expected JSON, received ${contentType}: ${text}`);
-        }
+        const response = await fetch("https://localhost:7245/api/Events");
         const data = await response.json();
-        setEvents(data);
+        setEvents(data["$values"]);
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching events:', error);
-        setErrorMessage('Failed to load events. Please try again later.');
+        console.error("Error fetching events:", error);
+        toast.error("Failed to load events. Please try again later.");
         setLoading(false);
       }
     }
     fetchEvents();
   }, []);
 
-  // Handle adding a new event
-  const handleAddEvent = async (e) => {
+  // Handle Add or Update Event
+  const handleSaveEvent = async (e) => {
     e.preventDefault();
+    const url = editingEvent
+      ? `https://localhost:7245/api/Events/${newEvent.id}` // Update event
+      : "https://localhost:7245/api/Events"; // Add new event
+
+    const method = editingEvent ? "PUT" : "POST"; // Set method based on the action
+
     try {
-      const response = await fetch('https://localhost:7245/api/events', {
-        method: 'POST',
+      const response = await fetch(url, {
+        method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(newEvent),
+        body: JSON.stringify({
+          ...newEvent,
+          eventDateTime: `${newEvent.eventDate}T${newEvent.eventTime}`,
+        }),
       });
-      const contentType = response.headers.get('content-type');
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      } else if (contentType && contentType.indexOf('application/json') === -1) {
-        const text = await response.text();
-        throw new Error(`Expected JSON, received ${contentType}: ${text}`);
-      }
+
+      if (!response.ok) throw new Error("Failed to save event.");
+      
       const data = await response.json();
-      setEvents((prevEvents) => [...prevEvents, data]); // Add new event to list
-      setNewEvent({ name: '', date: '', description: '' }); // Reset form
-    } catch (error) {
-      console.error('Error adding event:', error);
-      setErrorMessage('Failed to add event. Please try again.');
-    }
-  };
 
-  // Handle editing an event
-  const handleEditEvent = async (eventId) => {
-    try {
-      const response = await fetch(`https://localhost:7245/api/events/${eventId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(editingEvent),
-      });
-      const contentType = response.headers.get('content-type');
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      } else if (contentType && contentType.indexOf('application/json') === -1) {
-        const text = await response.text();
-        throw new Error(`Expected JSON, received ${contentType}: ${text}`);
+      if (editingEvent) {
+        // Update event in list
+        setEvents((prevEvents) =>
+          prevEvents.map((event) => (event.id === newEvent.id ? data : event))
+        );
+        toast.success("Event updated successfully!");
+      } else {
+        // Add new event to the list
+        setEvents((prevEvents) => [...prevEvents, data]);
+        toast.success("Event added successfully!");
       }
-      const updatedEvent = await response.json();
-      setEvents((prevEvents) =>
-        prevEvents.map((event) => (event.id === eventId ? updatedEvent : event))
-      );
-      setEditingEvent(null); // Reset editing state
+
+      setNewEvent(defaultEventState);
+      setShowModal(false); // Close modal after submission
     } catch (error) {
-      console.error('Error editing event:', error);
-      setErrorMessage('Failed to edit event. Please try again.');
+      console.error("Error saving event:", error);
+      toast.error("Failed to save event. Please try again.");
     }
   };
 
-  // Handle deleting an event
+  // Open the modal for adding a new event
+  const openAddModal = () => {
+    setNewEvent(defaultEventState); // Clear form
+    setEditingEvent(null); // Clear editing state
+    setShowModal(true); // Show modal
+  };
+
+  // Open modal for editing an event
+  const openEditModal = (event) => {
+    setNewEvent({
+      ...event,
+      eventDate: event.eventDateTime.split("T")[0],
+      eventTime: event.eventDateTime.split("T")[1],
+    }); // Set the form with selected event data
+    setEditingEvent(event);
+    setShowModal(true); // Show modal
+  };
+
+  // Delete Event
   const handleDeleteEvent = async (eventId) => {
+    if (!window.confirm("Are you sure you want to delete this event?")) return;
+
     try {
-      const response = await fetch(`https://localhost:7245/api/events/${eventId}`, {
-        method: 'DELETE',
+      const response = await fetch(`https://localhost:7245/api/Events/${eventId}`, {
+        method: "DELETE",
       });
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
+
+      if (!response.ok) throw new Error("Failed to delete event.");
+
       setEvents((prevEvents) => prevEvents.filter((event) => event.id !== eventId));
+      toast.success("Event deleted successfully!");
     } catch (error) {
-      console.error('Error deleting event:', error);
-      setErrorMessage('Failed to delete event. Please try again.');
+      console.error("Error deleting event:", error);
+      toast.error("Failed to delete event. Please try again.");
     }
   };
+
+  if (loading) {
+    return <div>Loading events...</div>; // Display loading message
+  }
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold my-4">Manage Events</h1>
+    <div className="container mx-auto max-w-6xl px-0 py-4 dark:bg-gray-800">
+      <button
+        className="bg-blue-500 text-white px-6 py-3 rounded-lg mb-6 hover:bg-blue-600 transition duration-150 dark:bg-blue-700 dark:hover:bg-blue-600"
+        onClick={openAddModal}
+      >
+        Add New Event
+      </button>
 
-      {errorMessage && <div className="text-red-500 mb-4">{errorMessage}</div>}
-
-      {loading ? (
-        <div>Loading events...</div>
+      <h2 className="text-2xl font-semibold mb-6 dark:text-white">Upcoming Events</h2>
+      {events.length > 0 ? (
+        <table className="min-w-full border border-gray-300 dark:border-gray-600">
+          <thead className="bg-gray-100 dark:bg-gray-700">
+            <tr>
+              <th className="p-4 border text-left font-semibold dark:text-gray-300">Event Name</th>
+              <th className="p-4 border text-left font-semibold dark:text-gray-300">Date</th>
+              <th className="p-4 border text-left font-semibold dark:text-gray-300">Time</th>
+              <th className="p-4 border text-left font-semibold dark:text-gray-300">Description</th>
+              <th className="p-4 border text-left font-semibold dark:text-gray-300">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {events.map((event) => (
+              <tr key={event.id} className="hover:bg-gray-50 dark:hover:bg-gray-600">
+                <td className="p-4 border dark:border-gray-600 dark:text-gray-200">
+                  {event.eventName}
+                </td>
+                <td className="p-4 border dark:border-gray-600 dark:text-gray-200">
+                  {new Date(event.eventDateTime).toLocaleDateString()}
+                </td>
+                <td className="p-4 border dark:border-gray-600 dark:text-gray-200">
+                  {new Date(event.eventDateTime).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </td>
+                <td className="p-4 border dark:border-gray-600 dark:text-gray-200">
+                  {event.eventDescription}
+                </td>
+                <td className="p-4 border-t-0">
+                  <div className="flex space-x-2">
+                    <button
+                      className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition dark:bg-blue-700 dark:hover:bg-blue-600"
+                      onClick={() => openEditModal(event)}
+                    >
+                      <i className="bi bi-pencil"></i>
+                    </button>
+                    <button
+                      className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 transition dark:bg-red-700 dark:hover:bg-red-600"
+                      onClick={() => handleDeleteEvent(event.id)}
+                    >
+                      <i className="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       ) : (
-        <>
-          {/* Add New Event Form */}
-          <form onSubmit={handleAddEvent} className="mb-6">
-            <h2 className="text-xl mb-4">Add New Event</h2>
-            <div className="mb-4">
-              <label htmlFor="eventName" className="block text-sm font-medium">
-                Event Name
-              </label>
-              <input
-                type="text"
-                id="eventName"
-                className="border rounded p-2 w-full"
-                value={newEvent.eventName}
-                onChange={(e) => setNewEvent({ ...newEvent, eventName: e.target.value })}
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="eventDate" className="block text-sm font-medium">
-                Event Date
-              </label>
-              <input
-                type="date"
-                id="eventDate"
-                className="border rounded p-2 w-full"
-                value={newEvent.eventDateTime}
-                onChange={(e) => setNewEvent({ ...newEvent, eventDateTime: e.target.value })}
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="eventDescription" className="block text-sm font-medium">
-                Event Description
-              </label>
-              <textarea
-                id="eventDescription"
-                className="border rounded p-2 w-full"
-                value={newEvent.eventDescription}
-                onChange={(e) => setNewEvent({ ...newEvent, eventDescription: e.target.value })}
-                required
-              />
-            </div>
-            <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
-              Add Event
-            </button>
-          </form>
+        <p>No events available.</p>
+      )}
 
-          {/* Events List */}
-          <h2 className="text-xl mb-4">Upcoming Events</h2>
-          {events.length > 0 ? (
-            <table className="min-w-full border-collapse block md:table">
-              <thead className="block md:table-header-group">
-                <tr className="border border-gray-300 md:border-none block md:table-row">
-                  <th className="p-2 text-left">Event Name</th>
-                  <th className="p-2 text-left">Date</th>
-                  <th className="p-2 text-left">Description</th>
-                  <th className="p-2 text-left">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="block md:table-row-group">
-                {events.map((event) => (
-                  <tr
-                    key={event.id}
-                    className="border border-gray-300 md:border-none block md:table-row"
-                  >
-                    <td className="p-2">{event.eventName}</td>
-                    <td className="p-2">{event.eventDateTime}</td>
-                    <td className="p-2">{event.eventDescription}</td>
-                    <td className="p-2 flex space-x-2">
-                      <button
-                        className="bg-yellow-500 text-white px-4 py-1 rounded"
-                        onClick={() => setEditingEvent(event)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="bg-red-500 text-white px-4 py-1 rounded"
-                        onClick={() => handleDeleteEvent(event.id)}
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <p>No events available.</p>
-          )}
-
-          {/* Edit Event Section */}
-          {editingEvent && (
-            <div className="mt-6">
-              <h2 className="text-xl mb-4">Edit Event</h2>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleEditEvent(editingEvent.id);
-                }}
-              >
-                <div className="mb-4">
-                  <label htmlFor="editEventName" className="block text-sm font-medium">
-                    Event Name
-                  </label>
-                  <input
-                    type="text"
-                    id="editEventName"
-                    className="border rounded p-2 w-full"
-                    value={editingEvent.eventName}
-                    onChange={(e) =>
-                      setEditingEvent({ ...editingEvent, eventName: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div className="mb-4">
-                  <label htmlFor="editEventDate" className="block text-sm font-medium">
-                    Event Date
-                  </label>
-                  <input
-                    type="date"
-                    id="editEventDate"
-                    className="border rounded p-2 w-full"
-                    value={editingEvent.eventDateTime}
-                    onChange={(e) =>
-                      setEditingEvent({ ...editingEvent, eventDateTime: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div className="mb-4">
-                  <label htmlFor="editEventDescription" className="block text-sm font-medium">
-                    Event Description
-                  </label>
-                  <textarea
-                    id="editEventDescription"
-                    className="border rounded p-2 w-full"
-                    value={editingEvent.eventDescription}
-                    onChange={(e) =>
-                      setEditingEvent({ ...editingEvent, eventDescription: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded">
-                  Save Changes
-                </button>
+      {/* Modal Form for Add/Edit Event */}
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-lg">
+            <h2 className="text-2xl font-semibold mb-6 dark:text-white">
+              {editingEvent ? "Edit Event" : "Add New Event"}
+            </h2>
+            <form onSubmit={handleSaveEvent}>
+              <div className="mb-4">
+                <label htmlFor="eventName" className="block text-sm font-medium dark:text-gray-200">
+                  Event Name
+                </label>
+                <input
+                  type="text"
+                  id="eventName"
+                  className="border rounded p-3 w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                  value={newEvent.eventName}
+                  onChange={(e) =>
+                    setNewEvent({ ...newEvent, eventName: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="eventDate" className="block text-sm font-medium dark:text-gray-200">
+                  Event Date
+                </label>
+                <input
+                  type="date"
+                  id="eventDate"
+                  className="border rounded p-3 w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                  value={newEvent.eventDate}
+                  onChange={(e) =>
+                    setNewEvent({ ...newEvent, eventDate: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="eventTime" className="block text-sm font-medium dark:text-gray-200">
+                  Event Time
+                </label>
+                <input
+                  type="time"
+                  id="eventTime"
+                  className="border rounded p-3 w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                  value={newEvent.eventTime}
+                  onChange={(e) =>
+                    setNewEvent({ ...newEvent, eventTime: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="eventDescription" className="block text-sm font-medium dark:text-gray-200">
+                  Event Description
+                </label>
+                <textarea
+                  id="eventDescription"
+                  className="border rounded p-3 w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                  value={newEvent.eventDescription}
+                  onChange={(e) =>
+                    setNewEvent({ ...newEvent, eventDescription: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              <div className="flex justify-end space-x-3">
                 <button
                   type="button"
-                  className="ml-2 bg-gray-500 text-white px-4 py-2 rounded"
-                  onClick={() => setEditingEvent(null)}
+                  className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition dark:bg-gray-600 dark:hover:bg-gray-500"
+                  onClick={() => setShowModal(false)}
                 >
                   Cancel
                 </button>
-              </form>
-            </div>
-          )}
-        </>
+                <button
+                  type="submit"
+                  className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition dark:bg-blue-700 dark:hover:bg-blue-600"
+                >
+                  {editingEvent ? "Update Event" : "Add Event"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );
 };
 
 export default AdminEvents;
+
+
+
 

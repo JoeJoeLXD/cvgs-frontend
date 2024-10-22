@@ -12,8 +12,8 @@ const Header = () => {
   const [darkMode, setDarkMode] = useState(
     JSON.parse(localStorage.getItem("darkMode")) || false
   );
-  const [searchSection, setSearchSection] = useState(false);
-  const [dropdown, setDropdown] = useState(false);
+  const [searchSection, setSearchSection] = useState(false); // Re-added
+  const [dropdown, setDropdown] = useState(false); // Re-added
 
   // Get the token, email, and role from sessionStorage
   const [token, setToken] = useState(getSession("token"));
@@ -43,7 +43,7 @@ const Header = () => {
 
   return (
     <header className="bg-white dark:bg-gray-900 shadow">
-      <nav className="container mx-auto flex justify-between items-center py-3">
+      <nav className="container mx-auto max-w-6xl px-0 flex justify-between items-center py-3">
         <div className="flex items-center">
           <Link to="/" className="flex items-center">
             <img src={Logo} className="h-10 w-10 mr-3" alt="Team Logo" />
@@ -56,7 +56,7 @@ const Header = () => {
         {/* Welcome Message */}
         {token && displayName && (
           <div className="text-gray-700 dark:text-white">
-            Welcome, {displayName}
+            Welcome, {displayName}({userEmail})
           </div>
         )}
 
@@ -82,7 +82,7 @@ const Header = () => {
           {/* Search Icon */}
           <div className="relative group">
             <span
-              onClick={() => setSearchSection(!searchSection)}
+              onClick={() => setSearchSection(!searchSection)} // Re-added toggle for search
               className="cursor-pointer text-xl text-gray-700 dark:text-white"
             >
               <i className="bi bi-search"></i>
@@ -111,7 +111,7 @@ const Header = () => {
           {/* Profile Icon */}
           <div className="relative group">
             <span
-              onClick={() => setDropdown(!dropdown)}
+              onClick={() => setDropdown(!dropdown)} // Re-added dropdown toggle
               className="bi bi-person-circle cursor-pointer text-2xl text-gray-700 dark:text-white"
             ></span>
             <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 px-3 py-1 bg-black text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
@@ -120,17 +120,17 @@ const Header = () => {
             </div>
             {dropdown &&
               (token ? (
-                <DropdownLoggedIn setDropdown={setDropdown} />
+                <DropdownLoggedIn setDropdown={setDropdown} /> // Re-added
               ) : (
-                <DropdownLoggedOut setDropdown={setDropdown} />
+                <DropdownLoggedOut setDropdown={setDropdown} /> // Re-added
               ))}
           </div>
 
           {/* Admin Icon - Only for Admin Users */}
-          {userRole!=null && userRole.toLowerCase() === "admin" && (
+          {userRole != null && userRole.toLowerCase() === "admin" && (
             <div className="relative group">
               <Link
-                to="/admin/"
+                to="/admin"
                 className="cursor-pointer text-xl text-gray-700 dark:text-white"
               >
                 <i className="bi bi-gear-fill"></i>
@@ -143,7 +143,7 @@ const Header = () => {
           )}
         </div>
       </nav>
-      {searchSection && <Search setSearchSection={setSearchSection} />}
+      {searchSection && <Search setSearchSection={setSearchSection} />} {/* Search section is now re-added */}
     </header>
   );
 };

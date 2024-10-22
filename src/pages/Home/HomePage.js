@@ -6,7 +6,7 @@ import { Intro, FeaturedProducts, Faq } from "./components";
 const HomePage = () => {
   useTitle("Access CVGS - Team GameHub");
   return (
-    <main>
+    <main className="container mx-auto max-w-6xl px-0 py-4">
       <Intro />
       <FeaturedProducts />
       <Faq />

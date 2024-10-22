@@ -1,15 +1,15 @@
 // src/services/dataService.js 
-
 import { toast } from "react-toastify";
 
 // Update user profile
 export async function updateUser(userId, updatedProfile) {
- 
   const token = getSession("token");
 
   if (!token || !userId) {
+    toast.error("User is not authenticated or missing userId");
     throw new Error("User is not authenticated or missing userId");
   }
+  
   const url = `https://localhost:7245/api/UserProfiles/${userId}`;
   
   const requestOptions = {
@@ -23,18 +23,19 @@ export async function updateUser(userId, updatedProfile) {
 
   try {
     const response = await fetch(url, requestOptions);
-    ;
 
     if (!response.ok) {
       const errorText = await response.text();
+      toast.error(`Error ${response.status}: ${errorText}`);
       throw new Error(`Error ${response.status}: ${errorText}`);
     }
 
     const data = await response.json();
+    toast.success("Profile updated successfully!");
     return data;
   } catch (error) {
     console.error("Error updating user profile:", error);
-    alert(error);
+    toast.error("Error updating profile.");
     throw error;
   }
 }
@@ -50,6 +51,7 @@ export async function getUserProfile() {
   const userId = getSession("userId");
 
   if (!token || !userId) {
+    toast.error("User is not authenticated");
     throw new Error("User is not authenticated");
   }
 
@@ -59,7 +61,7 @@ export async function getUserProfile() {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json" // Optional: Set content type if needed
+      "Content-Type": "application/json"
     },
   };
 
@@ -68,17 +70,18 @@ export async function getUserProfile() {
 
     if (!response.ok) {
       const errorText = await response.text();
+      toast.error(`Error ${response.status}: ${errorText}`);
       throw new Error(`Error ${response.status}: ${errorText}`);
     }
 
-    const data = await response.json(); // Directly parse the response
-    return data; // Return the user profile data
+    const data = await response.json();
+    return data;
   } catch (error) {
     console.error("Error fetching user data:", error);
+    toast.error("Error fetching user profile.");
     throw error;
   }
 }
-
 
 // Fetch the user's orders
 export async function getUserOrders() {
@@ -86,10 +89,11 @@ export async function getUserOrders() {
   const userId = getSession("userId");
 
   if (!token || !userId) {
+    toast.error("User is not authenticated");
     throw new Error("User is not authenticated");
   }
 
-  const url = `http://localhost:8000/orders`; // JSON Server endpoint
+  const url = `http://localhost:8000/orders`;
 
   const requestOptions = {
     method: "GET",
@@ -103,6 +107,7 @@ export async function getUserOrders() {
 
     if (!response.ok) {
       const errorText = await response.text();
+      toast.error(`Error ${response.status}: ${errorText}`);
       throw new Error(`Error ${response.status}: ${errorText}`);
     }
 
@@ -111,19 +116,21 @@ export async function getUserOrders() {
     return orders;
   } catch (error) {
     console.error("Error fetching user orders:", error);
+    toast.error("Error fetching orders.");
     throw error;
   }
 }
 
 // Create a new order
-export async function createOrder(orderData) { // Modified to accept orderData
+export async function createOrder(orderData) {
   const token = getSession("token");
 
   if (!token) {
+    toast.error("User is not authenticated");
     throw new Error("User is not authenticated");
   }
 
-  const url = `http://localhost:8000/orders`; // JSON Server endpoint
+  const url = `http://localhost:8000/orders`;
 
   const requestOptions = {
     method: "POST",
@@ -139,13 +146,16 @@ export async function createOrder(orderData) { // Modified to accept orderData
 
     if (!response.ok) {
       const errorText = await response.text();
+      toast.error(`Error ${response.status}: ${errorText}`);
       throw new Error(`Error ${response.status}: ${errorText}`);
     }
 
     const data = await response.json();
+    toast.success("Order created successfully!");
     return data;
   } catch (error) {
     console.error("Error creating order:", error);
+    toast.error("Error creating order.");
     throw error;
   }
 }
@@ -153,23 +163,24 @@ export async function createOrder(orderData) { // Modified to accept orderData
 // Save Address Function
 export async function saveAddress(addressData) {
   const token = getSession("token");
-  const cbid = getSession("cbid"); // Assuming 'cbid' is the user ID
+  const cbid = getSession("cbid");
 
   if (!token || !cbid) {
+    toast.error("User is not authenticated");
     throw new Error("User is not authenticated");
   }
 
-  const url = `http://localhost:8000/userAddresses`; // JSON Server endpoint for addresses
+  const url = `http://localhost:8000/userAddresses`;
 
   const requestOptions = {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`, // If your JSON server handles auth
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
       ...addressData,
-      userId: Number(cbid), // Associate address with user
+      userId: Number(cbid),
     }),
   };
 
@@ -178,15 +189,16 @@ export async function saveAddress(addressData) {
 
     if (!response.ok) {
       const errorText = await response.text();
+      toast.error(`Error ${response.status}: ${errorText}`);
       throw new Error(`Error ${response.status}: ${errorText}`);
     }
 
     const data = await response.json();
+    toast.success("Address saved successfully!");
     return data;
   } catch (error) {
     console.error("Error saving address:", error);
+    toast.error("Error saving address.");
     throw error;
   }
 }
-
-

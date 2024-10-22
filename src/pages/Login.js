@@ -1,6 +1,6 @@
 // src/pages/Login.js
 import React, { useRef, useState } from "react";
-import { useNavigate, Link } from "react-router-dom"; // Import Link from react-router-dom
+import { useNavigate, Link } from "react-router-dom"; 
 import { toast } from "react-toastify";
 import useTitle from "../hooks/useTitle";
 import { login, resetPassword } from "../services";
@@ -12,24 +12,47 @@ const Login = ({ setUserEmail }) => {
   const passwordRef = useRef();
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
+  
+  // State to track login attempts
+  const [loginAttempts, setLoginAttempts] = useState(0);
+  const maxAttempts = 3; // Maximum allowed attempts
 
   // Handle login
   async function handleLogin(event) {
     event.preventDefault();
+
+    if (loginAttempts >= maxAttempts) {
+      toast.error("Too many failed login attempts. Please try again later.", {
+        closeButton: true,
+        position: "bottom-center",
+      });
+      return; // Block further login attempts
+    }
+
     try {
       const authDetail = {
         email: emailRef.current.value,
         password: passwordRef.current.value,
       };
+
       const data = await login(authDetail);
+
       if (data.accessToken) {
         setUserEmail(data.user.email); // Update user email in the app
         navigate("/"); // Redirect to home or admin page as needed
       } else {
-        toast.error("Login failed");
+        setLoginAttempts((prev) => prev + 1); // Increase failed attempt count
+        toast.error("Login failed. Please check your credentials.", {
+          closeButton: true,
+          position: "bottom-center",
+        });
       }
     } catch (error) {
-      toast.error(error.message, {
+      setLoginAttempts((prev) => prev + 1); // Increase failed attempt count
+
+      // Check for different error formats and provide a fallback message
+      const errorMessage = error.response?.data?.message || error.message || "An error occurred during login. Please try again.";
+      toast.error(errorMessage, {
         closeButton: true,
         position: "bottom-center",
       });
@@ -40,13 +63,15 @@ const Login = ({ setUserEmail }) => {
   async function handleResetPassword() {
     try {
       const data = await resetPassword(resetEmail);
-      toast.success(data.message, {
+      toast.success(data.message || "Password reset email sent.", {
         closeButton: true,
         position: "bottom-center",
       });
       setIsResettingPassword(false);
     } catch (error) {
-      toast.error(error.message, {
+      // Check for different error formats and provide a fallback message
+      const errorMessage = error.response?.data?.message || error.message || "Failed to send password reset email. Please try again.";
+      toast.error(errorMessage, {
         closeButton: true,
         position: "bottom-center",
       });
@@ -99,9 +124,15 @@ const Login = ({ setUserEmail }) => {
             <button
               type="submit"
               className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+              disabled={loginAttempts >= maxAttempts} // Disable if attempts exceeded
             >
               Log In
             </button>
+            {loginAttempts >= maxAttempts && (
+              <p className="mt-2 text-red-600 text-sm">
+                You have reached the maximum number of login attempts.
+              </p>
+            )}
           </form>
           <p
             className="mt-4 text-blue-600 hover:underline cursor-pointer"
@@ -111,10 +142,7 @@ const Login = ({ setUserEmail }) => {
           </p>
           <p className="mt-4 text-sm text-gray-600 dark:text-gray-300">
             Not registered?{" "}
-            <Link
-              to="/register"
-              className="text-blue-600 hover:underline"
-            >
+            <Link to="/register" className="text-blue-600 hover:underline">
               Please register here.
             </Link>
           </p>
@@ -153,7 +181,4 @@ const Login = ({ setUserEmail }) => {
 };
 
 export default Login;
-
-
-
 
