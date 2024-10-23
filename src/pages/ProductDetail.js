@@ -1,9 +1,11 @@
 // src/pages/ProductDetail.js
 
+// src/pages/ProductDetail.js
+
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { Rating, RatingInput } from "../components/Elements"; 
+import { Rating, RatingInput } from "../components/Elements";
 import useTitle from "../hooks/useTitle";
 import { useCart, useWishlist } from "../context";
 import { getProduct, getProductList } from "../services";
@@ -20,15 +22,24 @@ const ProductDetail = () => {
   const [numberOfRatings, setNumberOfRatings] = useState(0);
   const { id } = useParams();
   const navigate = useNavigate();
-  useTitle(product.name);
+  useTitle(product.gameName || "Product Detail");
+
+  // List of random fallback images
+  const imagesList = [
+    "/assets/images/10001.avif",
+    "/assets/images/10002.avif",
+    "/assets/images/10003.avif",
+    "/assets/images/10004.avif",
+    "/assets/images/10005.avif"
+  ];
 
   useEffect(() => {
     async function fetchProducts() {
       try {
         const data = await getProduct(id);
         setProduct(data);
-        setAverageRating(data.averageRating || 0);
-        setNumberOfRatings(data.numberOfRatings || 0);
+        setAverageRating(data.rate || 0);
+        setNumberOfRatings(data.gameReviews?.$values.length || 0);
         setUserRating(data.userRating || 0);
 
         if (data.recommendations) {
@@ -73,17 +84,23 @@ const ProductDetail = () => {
   const handleRatingSubmit = (rating) => {
     setUserRating(rating);
     const newNumberOfRatings = numberOfRatings + 1;
-    const newAverageRating = ((averageRating * numberOfRatings) + rating) / newNumberOfRatings;
+    const newAverageRating =
+      (averageRating * numberOfRatings + rating) / newNumberOfRatings;
     setAverageRating(newAverageRating);
     setNumberOfRatings(newNumberOfRatings);
     toast.success(`You rated this game ${rating} stars!`);
   };
 
+  // Ensure there's always an image, either from the product or a random fallback
+  const productImage =
+    product.thumbnailPath ||
+    imagesList[Math.floor(Math.random() * imagesList.length)];
+
   return (
     <main>
       <section>
         <h1 className="mt-10 mb-5 text-4xl text-center font-bold text-gray-900 dark:text-slate-200">
-          {product.name}
+          {product.gameName}
         </h1>
         <p className="mb-5 text-lg text-center text-gray-900 dark:text-slate-200">
           {product.overview}
@@ -92,8 +109,8 @@ const ProductDetail = () => {
           <div className="max-w-xl my-3">
             <img
               className="rounded w-full h-auto max-h-96 object-cover"
-              src={product.poster || "/assets/images/default-poster.png"}
-              alt={product.name}
+              src={productImage}
+              alt={product.gameName}
             />
           </div>
           <div className="max-w-xl my-3">
@@ -105,12 +122,7 @@ const ProductDetail = () => {
               <Rating rating={averageRating} />
             </p>
             <p className="my-4 select-none">
-              {product.best_seller && (
-                <span className="font-semibold text-amber-500 border bg-amber-50 rounded-lg px-3 py-1 mr-2">
-                  BEST SELLER
-                </span>
-              )}
-              {product.in_stock ? (
+              {product.gamesInStock > 0 ? (
                 <span className="font-semibold text-emerald-600 border bg-slate-100 rounded-lg px-3 py-1 mr-2">
                   INSTOCK
                 </span>
@@ -119,18 +131,15 @@ const ProductDetail = () => {
                   OUT OF STOCK
                 </span>
               )}
-              <span className="font-semibold text-blue-500 border bg-slate-100 rounded-lg px-3 py-1 mr-2">
-                {product.size} MB
-              </span>
             </p>
             <p className="my-3 flex flex-col space-y-2">
               {!inCart ? (
                 <button
                   onClick={() => addToCart(product)}
                   className={`inline-flex items-center justify-center py-2 px-3 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 ${
-                    product.in_stock ? "" : "cursor-not-allowed opacity-50"
+                    product.gamesInStock ? "" : "cursor-not-allowed opacity-50"
                   }`}
-                  disabled={!product.in_stock}
+                  disabled={!product.gamesInStock}
                 >
                   Add To Cart <i className="ml-1 bi bi-plus-lg"></i>
                 </button>
@@ -138,9 +147,9 @@ const ProductDetail = () => {
                 <button
                   onClick={() => removeFromCart(product)}
                   className={`inline-flex items-center justify-center py-2 px-3 text-sm font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-800 ${
-                    product.in_stock ? "" : "cursor-not-allowed opacity-50"
+                    product.gamesInStock ? "" : "cursor-not-allowed opacity-50"
                   }`}
-                  disabled={!product.in_stock}
+                  disabled={!product.gamesInStock}
                 >
                   Remove Item <i className="ml-1 bi bi-trash3"></i>
                 </button>
@@ -172,25 +181,24 @@ const ProductDetail = () => {
             </button>
 
             <p className="text-lg text-gray-900 dark:text-slate-200">
-              {product.long_description}
+              {product.long_description || "No additional details available."}
             </p>
           </div>
         </div>
       </section>
 
       {/* Rating Section */}
-<section className="my-6 text-center">
-  <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-200 mb-3">
-    Rate this Game
-  </h2>
-  <div className="flex items-center justify-center">
-    <RatingInput currentRating={userRating} onSubmit={handleRatingSubmit} />
-    <span className="ml-3 text-lg text-gray-900 dark:text-slate-200">
-      Average Rating: {averageRating.toFixed(1)} ({numberOfRatings} Ratings)
-    </span>
-  </div>
-</section>
-
+      <section className="my-6 text-center">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-200 mb-3">
+          Rate this Game
+        </h2>
+        <div className="flex items-center justify-center">
+          <RatingInput currentRating={userRating} onSubmit={handleRatingSubmit} />
+          <span className="ml-3 text-lg text-gray-900 dark:text-slate-200">
+            Average Rating: {averageRating.toFixed(1)} ({numberOfRatings} Ratings)
+          </span>
+        </div>
+      </section>
 
       {/* Game Recommendations Section */}
       <section className="mt-10 text-center">
@@ -203,7 +211,10 @@ const ProductDetail = () => {
               <div key={recProduct.id} className="max-w-xs my-3">
                 <img
                   className="rounded w-full h-auto max-h-48 object-cover"
-                  src={recProduct.poster || "/assets/images/default-poster.png"}
+                  src={
+                    recProduct.poster ||
+                    `/assets/images/${imagesList[Math.floor(Math.random() * imagesList.length)]}.avif`
+                  } // Random image or poster
                   alt={recProduct.name}
                 />
                 <p className="text-lg font-semibold text-gray-900 dark:text-slate-200 mt-3">
@@ -232,3 +243,5 @@ const ProductDetail = () => {
 };
 
 export default ProductDetail;
+
+

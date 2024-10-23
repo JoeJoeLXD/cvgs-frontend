@@ -1,5 +1,7 @@
 // src/context/WishlistContext.js
+// src/context/WishlistContext.js
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { toast } from "react-toastify";
 
 const WishlistContext = createContext();
 
@@ -8,41 +10,118 @@ export const useWishlist = () => {
 };
 
 export const WishlistProvider = ({ children }) => {
-  // Initialize wishlist state from localStorage
-  const [wishlist, setWishlist] = useState(() => {
-    try {
-      const storedWishlist = localStorage.getItem("wishlist");
-      return storedWishlist ? JSON.parse(storedWishlist) : [];
-    } catch (error) {
-      console.error("Failed to parse wishlist from localStorage:", error);
-      return [];
-    }
-  });
+  const [wishlist, setWishlist] = useState([]);
 
-  // Sync wishlist state to localStorage whenever it changes
+  // Fetch wishlist from the backend API
   useEffect(() => {
+    const fetchWishlist = async () => {
+      try {
+        const response = await fetch("https://localhost:7245/api/WishLists");
+        if (!response.ok) {
+          throw new Error("Failed to fetch wishlist");
+        }
+
+        const data = await response.json();
+        console.log("Fetched wishlist data:", data); // Log fetched data for debugging
+
+        // Map the wishlist to actual games
+        const fetchedWishlist = await Promise.all(
+          data.$values.map(async (wishItem) => {
+            // Fetch game details using gameID from wishlist
+            if (
+              wishItem.gameID &&
+              wishItem.gameID !== "00000000-0000-0000-0000-000000000000"
+            ) {
+              try {
+                const gameResponse = await fetch(
+                  `https://localhost:7245/api/Games/${wishItem.gameID}`
+                );
+                if (!gameResponse.ok) {
+                  throw new Error("Failed to fetch game details for wishlist");
+                }
+                const gameData = await gameResponse.json();
+                return { ...wishItem, game: gameData }; // Attach game data to wishlist item
+              } catch (error) {
+                console.error(`Error fetching game with ID ${wishItem.gameID}:`, error.message);
+                return { ...wishItem, game: null }; // Handle fetch failure for individual games
+              }
+            } else {
+              return { ...wishItem, game: null }; // Handle invalid gameID
+            }
+          })
+        );
+        setWishlist(fetchedWishlist);
+      } catch (error) {
+        toast.error("Error fetching wishlist: " + error.message);
+      }
+    };
+
+    fetchWishlist();
+  }, []);
+
+  // Function to remove a product from the wishlist via the backend API
+  const removeFromWishlist = async (id) => {
     try {
-      localStorage.setItem("wishlist", JSON.stringify(wishlist));
+      console.log(`Attempting to remove wishlist item with ID: ${id}`);
+      const response = await fetch(
+        `https://localhost:7245/api/WishLists/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData?.message || "Failed to remove product from wishlist"
+        );
+      }
+
+      setWishlist((prevWishlist) =>
+        prevWishlist.filter((item) => item.wishListID !== id)
+      );
+      toast.success("Product removed from wishlist!");
     } catch (error) {
-      console.error("Failed to save wishlist to localStorage:", error);
-    }
-  }, [wishlist]);
-
-  // Function to add a product to the wishlist
-  const addToWishlist = (product) => {
-    if (!wishlist.find((item) => item.id === product.id)) {
-      setWishlist((prevWishlist) => [...prevWishlist, product]);
+      toast.error("Error removing from wishlist: " + error.message);
+      console.error("Error removing from wishlist:", error.message); // Log for debugging
     }
   };
 
-  // Function to remove a product from the wishlist
-  const removeFromWishlist = (id) => {
-    setWishlist((prevWishlist) => prevWishlist.filter((item) => item.id !== id));
+  // Function to add a product to the wishlist via the backend API
+  const addToWishlist = async (product) => {
+    try {
+      console.log("Adding to wishlist: ", product); // Log the product being added
+  
+      const response = await fetch("https://localhost:7245/api/WishLists", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ gameID: product.id, memberID: 1 }), // Assuming memberID = 1
+      });
+  
+      const responseData = await response.json(); // Parse JSON response
+  
+      if (!response.ok) {
+        console.error("Failed to add to wishlist: ", responseData);
+        throw new Error(responseData.message || "Failed to add product to wishlist");
+      }
+  
+      setWishlist((prevWishlist) => [...prevWishlist, { ...responseData, game: product }]);
+      toast.success("Product added to wishlist!");
+    } catch (error) {
+      console.error("Error adding to wishlist: ", error.message); // Log the error
+      toast.error("Error adding to wishlist: " + error.message);
+    }
   };
+  
 
   return (
-    <WishlistContext.Provider value={{ wishlist, addToWishlist, removeFromWishlist }}>
+    <WishlistContext.Provider
+      value={{ wishlist, addToWishlist, removeFromWishlist }}
+    >
       {children}
     </WishlistContext.Provider>
   );
 };
+

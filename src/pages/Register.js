@@ -1,16 +1,36 @@
-// src/pages/Register.j
+// src/pages/Register.js
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useTitle from "../hooks/useTitle";
 import { toast } from "react-toastify";
-import { register } from "../services";
 import ReCAPTCHA from "react-google-recaptcha";
+
+// Password rules provided by the API response
+const passwordRulesFromAPI = [
+  {
+    code: "PasswordRequiresNonAlphanumeric",
+    description: "Passwords must have at least one non alphanumeric character.",
+  },
+  {
+    code: "PasswordRequiresDigit",
+    description: "Passwords must have at least one digit ('0'-'9').",
+  },
+  {
+    code: "PasswordRequiresUpper",
+    description: "Passwords must have at least one uppercase ('A'-'Z').",
+  },
+];
 
 const Register = () => {
   useTitle("Register");
   const navigate = useNavigate();
   const [passwordMatchError, setPasswordMatchError] = useState("");
   const [captchaValidated, setCaptchaValidated] = useState(false);
+  const [passwordValidation, setPasswordValidation] = useState({
+    hasNonAlphanumeric: false,
+    hasDigit: false,
+    hasUpper: false,
+  });
 
   const handleCaptchaChange = (value) => {
     if (value) {
@@ -18,17 +38,25 @@ const Register = () => {
     }
   };
 
+  const validatePassword = (password) => {
+    setPasswordValidation({
+      hasNonAlphanumeric: /[^a-zA-Z0-9]/.test(password),
+      hasDigit: /\d/.test(password),
+      hasUpper: /[A-Z]/.test(password),
+    });
+  };
+
   async function handleRegister(event) {
     event.preventDefault();
-
+  
     const password = event.target.password.value;
     const confirmPassword = event.target.confirmPassword.value;
-
+  
     if (password !== confirmPassword) {
       setPasswordMatchError("Passwords do not match");
       return;
     }
-
+  
     if (!captchaValidated) {
       toast.error("Please complete the CAPTCHA validation", {
         closeButton: true,
@@ -36,37 +64,54 @@ const Register = () => {
       });
       return;
     }
-
+  
     try {
       const authDetail = {
-        
         displayName: event.target.displayName.value,
         email: event.target.email.value,
         password: password,
       };
-      const data = await register(authDetail);
-      data.accessToken
-        ? navigate("/products")
-        : toast.error(data, {
-            closeButton: true,
-            position: "bottom-center",
-          });
-      // Simulate email verification notice
-      toast.success(
-        "A verification link has been sent to your email address. Please verify your account.",
-        {
-          closeButton: true,
-          position: "bottom-center",
+  
+      const response = await fetch("https://localhost:7245/api/Auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(authDetail),
+      });
+  
+      const contentType = response.headers.get("content-type");
+      let data;
+  
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        data = await response.text();
+      }
+  
+      if (!response.ok) {
+        // Check if the error contains the DuplicateUserName message
+        if (data && data.$values && data.$values[0].code === "DuplicateUserName") {
+          throw new Error(data.$values[0].description); // Use the error message from the response
         }
-      );
+        throw new Error(data || "Registration failed");
+      }
+  
+      toast.success("A verification link has been sent to your email address. Please verify your account.", {
+        closeButton: true,
+        position: "bottom-center",
+      });
+  
+      navigate("/products"); // Redirect user after successful registration
     } catch (error) {
+      console.error("Error during registration:", error); // Log error details
       toast.error(error.message, {
         closeButton: true,
         position: "bottom-center",
       });
     }
   }
-
+  
   return (
     <main>
       <section>
@@ -119,8 +164,26 @@ const Register = () => {
             id="password"
             className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
             required
-            minLength="7" // Allow 7 characters for easier testing
+            minLength="7"
+            onChange={(e) => validatePassword(e.target.value)} // Validate password as user types
           />
+          {/* Display the password rules from API */}
+          <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+            {passwordRulesFromAPI.map((rule, index) => (
+              <p
+                key={index}
+                className={
+                  (rule.code === "PasswordRequiresNonAlphanumeric" && passwordValidation.hasNonAlphanumeric) ||
+                  (rule.code === "PasswordRequiresDigit" && passwordValidation.hasDigit) ||
+                  (rule.code === "PasswordRequiresUpper" && passwordValidation.hasUpper)
+                    ? "text-green-500"
+                    : "text-red-500"
+                }
+              >
+                {rule.description}
+              </p>
+            ))}
+          </div>
         </div>
         <div className="mb-6">
           <label
@@ -162,3 +225,6 @@ const Register = () => {
 };
 
 export default Register;
+
+
+
