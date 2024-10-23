@@ -1,6 +1,7 @@
 // src/services/authService.js 
-import { jwtDecode } from 'jwt-decode';
 
+import { jwtDecode } from 'jwt-decode';
+import { getUserProfile } from './dataService'; // Import the function to fetch user profile
 
 // Define ClaimTypes if not already imported
 const ClaimTypes = {
@@ -71,6 +72,15 @@ export async function login(authDetail) {
       sessionStorage.setItem("displayName", userData.user.displayName);
     }
 
+    // Fetch the latest profile data after login to ensure session storage has updated data
+    const updatedProfile = await getUserProfile();
+    sessionStorage.setItem("displayName", updatedProfile.displayName); // Update display name
+    sessionStorage.setItem("email", updatedProfile.email); // Update email if necessary
+    sessionStorage.setItem("role", updatedProfile.role); // Update role
+
+    // Trigger custom event to signal login
+    window.dispatchEvent(new Event("storage"));
+
     return userData; // Return user data
   } catch (error) {
     throw error; // Propagate the error
@@ -112,11 +122,12 @@ export function logout() {
   sessionStorage.removeItem("email"); // Clear user email from session
   sessionStorage.removeItem("role"); // Clear user role from session
   sessionStorage.removeItem("displayName"); // Clear display name from session
+
+  // Trigger custom event to signal logout
+  window.dispatchEvent(new Event("storage"));
 }
 
 // Utility function to get items from session storage
 export function getSession(key) {
   return sessionStorage.getItem(key); // Retrieve item as string
 }
-
-

@@ -9,16 +9,19 @@ export async function updateUser(userId, updatedProfile) {
     toast.error("User is not authenticated or missing userId");
     throw new Error("User is not authenticated or missing userId");
   }
-  
+
   const url = `https://localhost:7245/api/UserProfiles/${userId}`;
-  
+
   const requestOptions = {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify(updatedProfile),
+    body: JSON.stringify({
+      ...updatedProfile,
+      userId, // Ensure the userId is explicitly included in the payload
+    }),
   };
 
   try {

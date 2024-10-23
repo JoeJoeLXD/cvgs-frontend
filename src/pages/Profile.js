@@ -1,5 +1,5 @@
 // src/pages/Profile.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { getUserProfile, updateUser } from "../services/dataService";
 import { toast } from "react-toastify";
 
@@ -12,24 +12,35 @@ const Profile = () => {
     promotionalEmails: false,
   });
 
-  const [userId, setUserId] = useState(null); // Store the user ID
+  const [userId, setUserId] = useState(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const toastId = useRef(null); // Ref to store the toast ID to prevent duplicates
 
   useEffect(() => {
+    console.log("Component Mounted. Fetching user data...");
     async function fetchUserData() {
       try {
         const user = await getUserProfile();
         if (user) {
+          const formattedBirthDate =
+            user.birthOfDate && user.birthOfDate !== "0001-01-01"
+              ? user.birthOfDate.split("T")[0]
+              : "";
+
           setProfile({
-            displayName: user.displayName,
-            email: user.email,
+            displayName: user.displayName || "",
+            email: user.email || "",
             gender: user.gender || "",
-            birthDate: user.birthDate || "",
-            promotionalEmails: user.promotionalEmails || false,
+            birthDate: formattedBirthDate,
+            promotionalEmails: user.isReceivePromotionalEmails || false,
           });
-          setUserId(user.userId); // Save the user ID
+          setUserId(user.userId);
+          console.log("User data fetched successfully.");
         }
       } catch (error) {
-        toast.error("Failed to fetch user data");
+        if (!toastId.current) {
+          toastId.current = toast.error("Failed to fetch user data");
+        }
       }
     }
 
@@ -46,20 +57,56 @@ const Profile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (isUpdating) {
+      console.log(
+        "Update already in progress. Preventing multiple submissions."
+      );
+      return;
+    }
+
+    setIsUpdating(true);
+    console.log("Updating user profile...");
     try {
-      await updateUser(userId, profile); // Send updated profile to backend
-      toast.success("Profile updated successfully!");
+      const updatedProfile = {
+        ...profile,
+        birthOfDate: profile.birthDate,
+        isReceivePromotionalEmails: profile.promotionalEmails,
+      };
+
+      await updateUser(userId, updatedProfile);
+
+      console.log("Profile updated in the backend.");
+      sessionStorage.setItem("displayName", updatedProfile.displayName);
+      sessionStorage.setItem("email", updatedProfile.email);
+
+      setProfile((prevState) => ({
+        ...prevState,
+        ...updatedProfile,
+      }));
+
+      // Only show the toast if it hasn't been shown already
+      if (!toastId.current) {
+        toastId.current = toast.success("Profile updated successfully!");
+        console.log("Displaying success toast...");
+      }
     } catch (error) {
       toast.error("Failed to update profile");
+    } finally {
+      setIsUpdating(false);
+      toastId.current = null; // Reset the toastId for future updates
     }
   };
 
   return (
-    <div className="max-w-lg mx-auto mt-10">
-      <h1 className="text-2xl font-bold mb-4">Edit Profile</h1>
-      <form onSubmit={handleSubmit}>
+    <div className="container mx-auto max-w-6xl px-0 py-4 dark:bg-gray-800">
+      <h1 className="text-2xl font-bold mb-6 dark:text-white">Edit Profile</h1>
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6">
         <div className="mb-4">
-          <label htmlFor="displayName" className="block text-sm font-medium">
+          <label
+            htmlFor="displayName"
+            className="block text-sm font-medium dark:text-white"
+          >
             Name
           </label>
           <input
@@ -68,11 +115,14 @@ const Profile = () => {
             name="displayName"
             value={profile.displayName}
             onChange={handleChange}
-            className="mt-1 p-2 w-full border rounded"
+            className="mt-1 p-2 w-full border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="email" className="block text-sm font-medium">
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium dark:text-white"
+          >
             Email
           </label>
           <input
@@ -81,12 +131,15 @@ const Profile = () => {
             name="email"
             value={profile.email}
             onChange={handleChange}
-            className="mt-1 p-2 w-full border rounded"
+            className="mt-1 p-2 w-full border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             disabled
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="gender" className="block text-sm font-medium">
+          <label
+            htmlFor="gender"
+            className="block text-sm font-medium dark:text-white"
+          >
             Gender
           </label>
           <select
@@ -94,7 +147,7 @@ const Profile = () => {
             name="gender"
             value={profile.gender}
             onChange={handleChange}
-            className="mt-1 p-2 w-full border rounded"
+            className="mt-1 p-2 w-full border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
           >
             <option value="">Select Gender</option>
             <option value="male">Male</option>
@@ -103,7 +156,10 @@ const Profile = () => {
           </select>
         </div>
         <div className="mb-4">
-          <label htmlFor="birthDate" className="block text-sm font-medium">
+          <label
+            htmlFor="birthDate"
+            className="block text-sm font-medium dark:text-white"
+          >
             Birth Date
           </label>
           <input
@@ -112,13 +168,14 @@ const Profile = () => {
             name="birthDate"
             value={profile.birthDate}
             onChange={handleChange}
-            className="mt-1 p-2 w-full border rounded"
+            className="mt-1 p-2 w-full border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            max={new Date().toISOString().split("T")[0]}
           />
         </div>
         <div className="mb-4">
           <label
             htmlFor="promotionalEmails"
-            className="block text-sm font-medium"
+            className="block text-sm font-medium dark:text-white"
           >
             Receive Promotional Emails
           </label>
@@ -128,12 +185,12 @@ const Profile = () => {
             name="promotionalEmails"
             checked={profile.promotionalEmails}
             onChange={handleChange}
-            className="mt-1 p-2"
+            className="mt-1 p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
           />
         </div>
         <button
           type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded"
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition dark:bg-blue-700 dark:hover:bg-blue-600"
         >
           Update Profile
         </button>

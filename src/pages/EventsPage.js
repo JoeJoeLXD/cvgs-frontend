@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
+import { getSession } from "../services/authService"; // To get user session
 
 const EventsPage = () => {
   const [events, setEvents] = useState([]);
@@ -25,28 +26,67 @@ const EventsPage = () => {
     fetchEvents();
   }, []);
 
-  // Handle registering for an event
-  const handleRegister = async (eventId) => {
-    try {
-      // Simulate a registration request (replace with actual API call)
-      const response = await fetch(
-        `https://localhost:7245/api/Events/register/${eventId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ eventId }),
-        }
-      );
+  // Fetch registered events for the current user
+  useEffect(() => {
+    async function fetchRegisteredEvents() {
+      const userId = getSession("userId"); // Fetch the user ID from session storage
 
-      if (!response.ok) {
-        throw new Error("Failed to register for the event.");
+      if (!userId) {
+        console.error("User is not logged in");
+        return;
       }
 
-      // Simulate successful registration response
-      setRegisteredEvents((prev) => [...prev, eventId]); // Mark this event as registered
-      toast.success(`Successfully registered for event ID: ${eventId}`);
+      try {
+        const response = await fetch(`https://localhost:7245/api/EventRegisters/user/${userId}`); // Adjust this endpoint according to your backend
+        if (response.ok) {
+          const data = await response.json();
+
+          // Ensure correct response format
+          if (data && Array.isArray(data)) {
+            setRegisteredEvents(data.map((reg) => reg.eventId)); // Store registered event IDs
+          } else {
+            console.error("Unexpected data format:", data);
+          }
+        } else {
+          console.error(`Failed to fetch registered events. Status: ${response.status}`);
+        }
+      } catch (error) {
+        console.error("Error fetching registered events:", error);
+        toast.error("Failed to load registered events.");
+      }
+    }
+    fetchRegisteredEvents();
+  }, []);
+
+  // Handle registering for an event
+  const handleRegister = async (eventId) => {
+    const userId = getSession("userId"); // Fetch the user ID from session storage
+
+    // Ensure userId is available
+    if (!userId) {
+      toast.error("You must be logged in to register for an event.");
+      return;
+    }
+
+    try {
+      const response = await fetch("https://localhost:7245/api/EventRegisters", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ eventId, userId }), // Send the correct eventId and userId
+      });
+
+      const responseData = await response.json(); 
+
+      if (response.ok) {
+        // Update registered events in the UI
+        setRegisteredEvents((prev) => [...prev, eventId]); // Add the eventId to registered events
+        toast.success(`Successfully registered for event ID: ${eventId}`);
+      } else {
+        console.error("Response error:", responseData);
+        toast.error(responseData.message || "Failed to register for the event.");
+      }
     } catch (error) {
       console.error("Error registering for event:", error);
       toast.error("Failed to register for the event.");

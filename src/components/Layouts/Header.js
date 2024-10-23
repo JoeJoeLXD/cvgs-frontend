@@ -32,17 +32,27 @@ const Header = () => {
     }
   }, [darkMode]);
 
-  // Update token, userEmail, and userRole whenever the dropdown is toggled
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Listen to storage changes (triggered by login/logout)
   useEffect(() => {
-    setToken(getSession("token"));
-    setUserEmail(getSession("email"));
-    setUserRole(getSession("role"));
-    setDisplayName(getSession("displayName"));
-  });
+    const handleStorageChange = () => {
+      // Fetch the latest token and user information from sessionStorage
+      setToken(getSession("token"));
+      setUserEmail(getSession("email"));
+      setUserRole(getSession("role"));
+      setDisplayName(getSession("displayName"));
+    };
+
+    // Add an event listener to listen for storage changes
+    window.addEventListener("storage", handleStorageChange);
+
+    // Cleanup event listener when component unmounts
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
 
   return (
-    <header className="bg-white dark:bg-gray-900 shadow">
+    <header className="bg-white dark:bg-gray-800 shadow"> {/* Adjusted to a slightly lighter gray in dark mode */}
       <nav className="container mx-auto max-w-6xl px-0 flex justify-between items-center py-3">
         <div className="flex items-center">
           <Link to="/" className="flex items-center">
@@ -56,7 +66,7 @@ const Header = () => {
         {/* Welcome Message */}
         {token && displayName && (
           <div className="text-gray-700 dark:text-white">
-            Welcome, {displayName}({userEmail})
+            Welcome, {displayName} ({userEmail})
           </div>
         )}
 
@@ -149,3 +159,5 @@ const Header = () => {
 };
 
 export default Header;
+
+

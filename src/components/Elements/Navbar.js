@@ -1,5 +1,4 @@
 // src/components/Elements/Navbar.js
-
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 
@@ -7,17 +6,17 @@ const Navbar = () => {
   const [navbarOpen, setNavbarOpen] = useState(false);
 
   return (
-    <nav className="bg-gray-100 py-4">
+    <nav className="bg-gray-100 dark:bg-gray-900 py-4"> {/* Changed dark mode color to a darker gray */}
       <div className="container mx-auto max-w-6xl px-0 flex justify-between items-center">
         {/* Main logo and link */}
-        <NavLink to="/" className="text-black font-bold text-lg">
+        <NavLink to="/" className="text-black dark:text-white font-bold text-lg">
           GameHub
         </NavLink>
 
         {/* Mobile toggle button */}
         <button
           onClick={() => setNavbarOpen(!navbarOpen)}
-          className="text-white lg:hidden"
+          className="text-black dark:text-white lg:hidden"
         >
           <i className="fas fa-bars"></i>
         </button>
@@ -32,8 +31,8 @@ const Navbar = () => {
             to="/products"
             className={({ isActive }) =>
               isActive
-                ? "text-blue-500 font-bold px-4 py-2 hover:bg-gray-300 rounded"
-                : "text-black px-4 py-2 hover:bg-gray-300 rounded"
+                ? "text-blue-500 font-bold px-4 py-2 hover:bg-gray-300 dark:hover:bg-gray-700 rounded"
+                : "text-black dark:text-white px-4 py-2 hover:bg-gray-300 dark:hover:bg-gray-700 rounded"
             }
           >
             Games
@@ -42,8 +41,8 @@ const Navbar = () => {
             to="/wishlist"
             className={({ isActive }) =>
               isActive
-                ? "text-blue-500 font-bold px-4 py-2 hover:bg-gray-300 rounded"
-                : "text-black px-4 py-2 hover:bg-gray-300 rounded"
+                ? "text-blue-500 font-bold px-4 py-2 hover:bg-gray-300 dark:hover:bg-gray-700 rounded"
+                : "text-black dark:text-white px-4 py-2 hover:bg-gray-300 dark:hover:bg-gray-700 rounded"
             }
           >
             Wishlist
@@ -52,8 +51,8 @@ const Navbar = () => {
             to="/dashboard"
             className={({ isActive }) =>
               isActive
-                ? "text-blue-500 font-bold px-4 py-2 hover:bg-gray-300 rounded"
-                : "text-black px-4 py-2 hover:bg-gray-300 rounded"
+                ? "text-blue-500 font-bold px-4 py-2 hover:bg-gray-300 dark:hover:bg-gray-700 rounded"
+                : "text-black dark:text-white px-4 py-2 hover:bg-gray-300 dark:hover:bg-gray-700 rounded"
             }
           >
             Dashboard
@@ -63,8 +62,8 @@ const Navbar = () => {
             to="/events"
             className={({ isActive }) =>
               isActive
-                ? "text-blue-500 font-bold px-4 py-2 hover:bg-gray-300 rounded"
-                : "text-black px-4 py-2 hover:bg-gray-300 rounded"
+                ? "text-blue-500 font-bold px-4 py-2 hover:bg-gray-300 dark:hover:bg-gray-700 rounded"
+                : "text-black dark:text-white px-4 py-2 hover:bg-gray-300 dark:hover:bg-gray-700 rounded"
             }
           >
             Events
@@ -74,11 +73,22 @@ const Navbar = () => {
             to="/preferences"
             className={({ isActive }) =>
               isActive
-                ? "text-blue-500 font-bold px-4 py-2 hover:bg-gray-300 rounded"
-                : "text-black px-4 py-2 hover:bg-gray-300 rounded"
+                ? "text-blue-500 font-bold px-4 py-2 hover:bg-gray-300 dark:hover:bg-gray-700 rounded"
+                : "text-black dark:text-white px-4 py-2 hover:bg-gray-300 dark:hover:bg-gray-700 rounded"
             }
           >
             Preferences
+          </NavLink>
+          {/* Profile Link */}
+          <NavLink
+            to="/profile"
+            className={({ isActive }) =>
+              isActive
+                ? "text-blue-500 font-bold px-4 py-2 hover:bg-gray-300 dark:hover:bg-gray-700 rounded"
+                : "text-black dark:text-white px-4 py-2 hover:bg-gray-300 dark:hover:bg-gray-700 rounded"
+            }
+          >
+            Profile
           </NavLink>
         </div>
       </div>
@@ -87,4 +97,7 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
+
+
 
