@@ -1,43 +1,50 @@
 //src/services/productService.js
 export async function getProductList(searchTerm) {
-  // CHANGE URL
-  const response = await fetch(
-    `${process.env.REACT_APP_HOST}/products?name_like=${
-      searchTerm ? searchTerm : ""
-    }`
-  );
+  // Fetch games from the backend API, with search term filtering
+  const url = `https://localhost:7245/api/Games${
+    searchTerm ? `?name_like=${searchTerm}` : ""
+  }`;
+
+  const response = await fetch(url);
+
   if (!response.ok) {
     const error = new Error(response.statusText);
     error.status = response.status;
     throw error;
   }
+
   const data = await response.json();
-  return data;
+  return data["$values"]; // Assuming the backend API response has a `$values` key containing the array of games
 }
 
 export async function getProduct(id) {
-  // CHANGE URL
-  const response = await fetch(`${process.env.REACT_APP_HOST}/products`);
+  // Fetch specific game by ID
+  const url = `https://localhost:7245/api/Games/${id}`;
+
+  const response = await fetch(url);
+
   if (!response.ok) {
     const error = new Error(response.statusText);
     error.status = response.status;
     throw error;
   }
-  const data = await response.json();
-  const product = data.find((product) => product.id === parseInt(id));
+
+  const product = await response.json();
   return product;
 }
 
 export async function getFeaturedList() {
-  // CHANGE URL
-  const response = await fetch(
-    `${process.env.REACT_APP_HOST}/featured_products`
-  );
+  // Fetch featured games from the backend API
+  const url = `https://localhost:7245/api/FeaturedGames`; // Adjust the URL based on your backend route for featured games
+
+  const response = await fetch(url);
+
   if (!response.ok) {
     const error = new Error(response.statusText);
     error.status = response.status;
     throw error;
   }
+
   const data = await response.json();
-  return data;
+  return data["$values"]; // Assuming the response contains `$values` key
 }

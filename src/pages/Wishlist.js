@@ -8,7 +8,7 @@ import { Link } from "react-router-dom";
 
 const Wishlist = () => {
   const { userId } = useParams(); // Get the userId if it's available (e.g., friend's userId)
-  const { wishlist, removeFromWishlist } = useWishlist(); // Removed fetchWishlist
+  const { wishlist, removeFromWishlist } = useWishlist();
   const { getFriends } = useFriendsAndFamily();
   const [isOwnWishlist] = useState(!userId);
   const [canViewWishlist, setCanViewWishlist] = useState(true);
@@ -69,7 +69,7 @@ const Wishlist = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-4">
+    <div className="container mx-auto max-w-6xl px-0 py-4">
       <h1 className="text-3xl font-bold mb-6">
         {isOwnWishlist ? "Your Wishlist" : "Friend's Wishlist"}
       </h1>
@@ -83,21 +83,24 @@ const Wishlist = () => {
       )}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {wishlist.map((item) => (
-          <div key={item.id} className="border rounded-lg p-4 shadow">
+          <div key={item.wishListID} className="border rounded-lg p-4 shadow">
             <img
-              src={item.poster || "/assets/images/default-poster.png"}
-              alt={item.name}
+              src={
+                item.game?.poster ||
+                "/assets/images/default-poster.png"
+              }
+              alt={item.game?.gameName || "Unknown Game"}
               className="w-full h-48 object-cover mb-4"
             />
-            <h2 className="text-xl font-semibold">{item.name}</h2>
-            <p className="text-gray-600">${item.price}</p>
+            <h2 className="text-xl font-semibold">{item.game?.gameName || "Unknown Game"}</h2>
+            <p className="text-gray-600">${item.game?.price || "Unknown Price"}</p>
             <div className="mt-4 flex justify-between">
-              <Link to={`/products/${item.id}`} className="text-blue-500 hover:underline">
+              <Link to={`/products/${item.game?.id}`} className="text-blue-500 hover:underline">
                 View Product
               </Link>
               {isOwnWishlist && (
                 <button
-                  onClick={() => handleRemove(item.id)}
+                  onClick={() => handleRemove(item.wishListID)}
                   className="text-red-500 hover:underline"
                 >
                   Remove
@@ -112,6 +115,9 @@ const Wishlist = () => {
 };
 
 export default Wishlist;
+
+
+
 
 
 
