@@ -62,12 +62,26 @@ const Login = ({ setUserEmail }) => {
   // Handle Password Reset
   async function handleResetPassword() {
     try {
-      const data = await resetPassword(resetEmail);
-      toast.success(data.message || "Password reset email sent.", {
-        closeButton: true,
-        position: "bottom-center",
-      });
-      setIsResettingPassword(false);
+      const response = await resetPassword(resetEmail);
+      if (response.ok) {
+        toast.success("Password reset email sent!", {
+          closeButton: true,
+          position: "bottom-center",
+        });
+        setIsResettingPassword(false);
+      } else {
+        const errorData = await  response.text()//  the response is plain text
+        toast.error(`Error: ${errorData || 'Error sending password reset email. Please try again.'}`, {
+          closeButton: true,
+          position: "bottom-center",
+        });
+      }
+
+      // toast.success(data.message || "Password reset email sent.", {
+      //   closeButton: true,
+      //   position: "bottom-center",
+      // });
+     
     } catch (error) {
       // Check for different error formats and provide a fallback message
       const errorMessage = error.response?.data?.message || error.message || "Failed to send password reset email. Please try again.";
