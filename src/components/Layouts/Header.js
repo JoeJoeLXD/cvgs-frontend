@@ -52,7 +52,9 @@ const Header = () => {
   }, []);
 
   return (
-    <header className="bg-white dark:bg-gray-800 shadow"> {/* Adjusted to a slightly lighter gray in dark mode */}
+    <header className="bg-white dark:bg-gray-800 shadow">
+      {" "}
+      {/* Adjusted to a slightly lighter gray in dark mode */}
       <nav className="container mx-auto max-w-6xl px-0 flex justify-between items-center py-3">
         <div className="flex items-center">
           <Link to="/" className="flex items-center">
@@ -103,20 +105,27 @@ const Header = () => {
             </div>
           </div>
 
-          {/* Cart Icon */}
-          <div className="relative group">
-            <Link to="/cart" className="relative text-gray-700 dark:text-white">
-              <span className="text-2xl bi bi-cart-fill">
-                <span className="absolute text-white text-sm -top-2 left-2.5 bg-rose-500 px-1 rounded-full">
-                  {cartList.length}
+          {/* Cart Icon - Only show if user is logged in */}
+          {token && (
+            <div className="relative group">
+              <Link
+                to="/cart"
+                className="relative text-gray-700 dark:text-white"
+              >
+                <span className="text-2xl bi bi-cart-fill">
+                  {cartList.length > 0 && (
+                    <span className="absolute text-white text-sm -top-2 left-2.5 bg-rose-500 px-1 rounded-full">
+                      {cartList.length}
+                    </span>
+                  )}
                 </span>
-              </span>
-            </Link>
-            <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 px-3 py-1 bg-black text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
-              Cart
-              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full w-3 h-3 bg-black rotate-45"></div>
+              </Link>
+              <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 px-3 py-1 bg-black text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                Cart
+                <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full w-3 h-3 bg-black rotate-45"></div>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Profile Icon */}
           <div className="relative group">
@@ -153,11 +162,10 @@ const Header = () => {
           )}
         </div>
       </nav>
-      {searchSection && <Search setSearchSection={setSearchSection} />} {/* Search section is now re-added */}
+      {searchSection && <Search setSearchSection={setSearchSection} />}{" "}
+      {/* Search section is now re-added */}
     </header>
   );
 };
 
 export default Header;
-
-

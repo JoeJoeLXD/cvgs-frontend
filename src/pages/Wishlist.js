@@ -7,13 +7,12 @@ import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 
 const Wishlist = () => {
-  const { memberID } = useParams(); // Get the memberID if it's available (e.g., friend's memberID)
+  const { memberID } = useParams();
   const { wishlist, removeFromWishlist } = useWishlist();
   const { getFriends } = useFriendsAndFamily();
   const [isOwnWishlist] = useState(!memberID);
   const [canViewWishlist, setCanViewWishlist] = useState(true);
 
-  // List of random fallback images
   const imagesList = [
     "/assets/images/10001.avif",
     "/assets/images/10002.avif",
@@ -24,8 +23,7 @@ const Wishlist = () => {
 
   useEffect(() => {
     if (memberID) {
-      // Check if memberID is in friends and family list
-      const friends = getFriends(1); // Assuming logged-in memberID is 1 for simplicity
+      const friends = getFriends(1);
       const isFriend = friends.some((friend) => friend.friendId === parseInt(memberID));
       setCanViewWishlist(isFriend);
       if (!isFriend) {
@@ -70,47 +68,47 @@ const Wishlist = () => {
   };
 
   if (!canViewWishlist) {
-    return <div className="text-center mt-10">You do not have permission to view this wishlist.</div>;
+    return <div className="text-center mt-10 dark:text-slate-200">You do not have permission to view this wishlist.</div>;
   }
 
   if (wishlist.length === 0) {
-    return <div className="text-center mt-10">This wishlist is empty.</div>;
+    return <div className="text-center mt-10 dark:text-slate-200">This wishlist is empty.</div>;
   }
 
   return (
-    <div className="container mx-auto max-w-6xl px-0 py-4">
-      <h1 className="text-3xl font-bold mb-6">
+    <div className="container mx-auto max-w-6xl px-0 py-4 dark:bg-gray-800">
+      <h1 className="text-3xl font-bold mb-6 dark:text-slate-100">
         {isOwnWishlist ? "Your Wishlist" : "Friend's Wishlist"}
       </h1>
       {isOwnWishlist && (
         <button
           onClick={handleShareWishlist}
-          className="mb-6 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          className="mb-6 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 dark:bg-blue-700 dark:hover:bg-blue-800"
         >
           Share Wishlist
         </button>
       )}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {wishlist.map((item) => (
-          <div key={item.wishListID} className="border rounded-lg p-4 shadow">
+          <div key={item.wishListID} className="border rounded-lg p-4 shadow dark:border-slate-700 dark:bg-gray-800 dark:text-slate-100">
             <img
               src={
                 item.game?.poster ||
-                imagesList[Math.floor(Math.random() * imagesList.length)] // Random fallback image
+                imagesList[Math.floor(Math.random() * imagesList.length)]
               }
               alt={item.game?.gameName || "Unknown Game"}
               className="w-full h-48 object-cover mb-4"
             />
-            <h2 className="text-xl font-semibold">{item.game?.gameName || "Unknown Game"}</h2>
-            <p className="text-gray-600">${item.game?.price || "Unknown Price"}</p>
+            <h2 className="text-xl font-semibold dark:text-slate-200">{item.game?.gameName || "Unknown Game"}</h2>
+            <p className="text-gray-600 dark:text-slate-400">${item.game?.price || "Unknown Price"}</p>
             <div className="mt-4 flex justify-between">
-              <Link to={`/products/${item.game?.id}`} className="text-blue-500 hover:underline">
+              <Link to={`/products/${item.game?.id}`} className="text-blue-500 hover:underline dark:text-blue-400">
                 View Product
               </Link>
               {isOwnWishlist && (
                 <button
                   onClick={() => handleRemove(item.wishListID)}
-                  className="text-red-500 hover:underline"
+                  className="text-red-500 hover:underline dark:text-red-400"
                 >
                   Remove
                 </button>
@@ -124,5 +122,6 @@ const Wishlist = () => {
 };
 
 export default Wishlist;
+
 
 

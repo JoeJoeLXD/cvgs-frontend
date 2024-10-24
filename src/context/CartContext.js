@@ -20,9 +20,18 @@ export const CartProvider = ({ children }) => {
   }, [state.cartList, state.total]);
 
   function addToCart(product) {
+    // Check if the product is already in the cart
+    const productExists = state.cartList.find((item) => item.id === product.id);
+    if (productExists) {
+      // Show an error or info message
+      console.log("Product is already in the cart.");
+      return; // Exit early to prevent duplicates
+    }
+  
+    // Proceed to add the product if it's not already in the cart
     const updatedList = state.cartList.concat(product);
     const updatedTotal = state.total + product.price;
-
+  
     dispatch({
       type: "ADD_TO_CART",
       payload: {
@@ -31,7 +40,7 @@ export const CartProvider = ({ children }) => {
       },
     });
   }
-
+  
   function removeFromCart(product) {
     const updatedList = state.cartList.filter((item) => item.id !== product.id);
     const updatedTotal = state.total - product.price;

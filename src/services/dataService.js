@@ -96,7 +96,7 @@ export async function getUserOrders() {
     throw new Error("User is not authenticated");
   }
 
-  const url = `http://localhost:8000/orders`;
+  const url = `https://localhost:7245/api/orders`;
 
   const requestOptions = {
     method: "GET",
@@ -133,7 +133,7 @@ export async function createOrder(orderData) {
     throw new Error("User is not authenticated");
   }
 
-  const url = `http://localhost:8000/orders`;
+  const url = `https://localhost:7245/api/orders`;
 
   const requestOptions = {
     method: "POST",
@@ -166,14 +166,19 @@ export async function createOrder(orderData) {
 // Save Address Function
 export async function saveAddress(addressData) {
   const token = getSession("token");
-  const cbid = getSession("cbid");
+  const memberID = getSession("userId");
 
-  if (!token || !cbid) {
+  if (!token || !memberID) {
     toast.error("User is not authenticated");
     throw new Error("User is not authenticated");
   }
 
-  const url = `http://localhost:8000/userAddresses`;
+  const url = `https://localhost:7245/api/Addresses`;
+
+  const bodyData = {
+    ...addressData,
+    memberID: memberID, // Include memberID to associate the address with the user profile
+  };
 
   const requestOptions = {
     method: "POST",
@@ -181,10 +186,7 @@ export async function saveAddress(addressData) {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({
-      ...addressData,
-      userId: Number(cbid),
-    }),
+    body: JSON.stringify(bodyData),
   };
 
   try {

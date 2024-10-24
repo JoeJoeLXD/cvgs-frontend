@@ -4,20 +4,31 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useCart, useWishlist } from "../../../context";
-import { createOrder, getUserProfile, saveAddress } from "../../../services";
+import { createOrder, getUserProfile, saveAddress, getSession } from "../../../services";
 import AddressForm from "../../../components/Elements/AddressForm";
 
 const Checkout = ({ setCheckout }) => {
   const { cartList, total, clearCart } = useCart();
   const { wishlist } = useWishlist();
   const [user, setUser] = useState({});
-  const [address, setAddress] = useState(null);
+  const [address, setAddress] = useState({
+    fullName: "",
+    country: "",
+    phoneNumber: "",
+    streetAddress: "",
+    aptSuite: "",
+    city: "",
+    province: "",
+    postalCode: "",
+    deliveryInstructions: "",
+  });
   const [isAddressSubmitted, setIsAddressSubmitted] = useState(false);
   const [selectedCard, setSelectedCard] = useState("");
   const navigate = useNavigate();
 
   const modalContentRef = useRef(null);
 
+  // Fetch user data and pre-fill address form
   useEffect(() => {
     if (modalContentRef.current) {
       modalContentRef.current.scrollTop = 0; // Scroll modal to top
@@ -25,23 +36,58 @@ const Checkout = ({ setCheckout }) => {
 
     async function fetchData() {
       try {
-        const data = await getUserProfile();
-        setUser(data);
+        console.log("Fetching user profile...");
+        const token = getSession("token");
+        console.log("Token retrieved:", token); // Log token
+
+        if (!token) {
+          throw new Error("User is not authenticated");
+        }
+
+        const userData = await getUserProfile();
+        console.log("User profile fetched successfully:", userData);
+        setUser(userData);
+
+        // Pre-fill the address form if address is available
+        if (userData.address) {
+          setAddress({
+            fullName: userData.address.fullName || "",
+            country: userData.address.country || "",
+            phoneNumber: userData.address.phoneNumber || "",
+            streetAddress: userData.address.streetAddress || "",
+            aptSuite: userData.address.aptSuite || "",
+            city: userData.address.city || "",
+            province: userData.address.province || "",
+            postalCode: userData.address.postalCode || "",
+            deliveryInstructions: userData.address.deliveryInstructions || "",
+          });
+          setIsAddressSubmitted(true); // Address is already submitted
+          console.log("Address form pre-filled with user data.");
+        }
       } catch (error) {
-        toast.error(error.message, { closeButton: true, position: "bottom-center" });
+        if (error.message === "User is not authenticated") {
+          toast.error("Please log in to proceed with checkout.", { closeButton: true });
+          navigate("/login");
+          console.log("User is not authenticated, redirecting to login.");
+        } else {
+          toast.error("Failed to fetch user data.", { closeButton: true });
+          console.error("Error fetching user profile:", error);
+        }
       }
     }
     fetchData();
-  }, []);
+  }, [navigate]);
 
   const handleOrderSubmit = async (event) => {
     event.preventDefault();
+    console.log("Handling order submission...");
 
     if (!isAddressSubmitted || !address || Object.keys(address).length === 0) {
       toast.error("Please complete your delivery address before proceeding.", {
         closeButton: true,
         position: "bottom-center",
       });
+      console.log("Address not submitted or incomplete.");
       return;
     }
 
@@ -50,6 +96,7 @@ const Checkout = ({ setCheckout }) => {
         closeButton: true,
         position: "bottom-center",
       });
+      console.log("Payment method not selected.");
       return;
     }
 
@@ -62,27 +109,38 @@ const Checkout = ({ setCheckout }) => {
         wishlist,
         status: "Pending", // Initial order status set to Pending
       };
+      console.log("Creating order with data:", orderData);
       const data = await createOrder(orderData);
+      console.log("Order created successfully:", data);
       clearCart();
       navigate("/order-summary", { state: { data: data, status: true } });
     } catch (error) {
       toast.error(error.message, { closeButton: true, position: "bottom-center" });
+      console.error("Error creating order:", error);
       navigate("/order-summary", { state: { status: false } });
     }
   };
 
   const handleAddressSubmit = async (addressData) => {
+    console.log("Submitting address data:", addressData);
     try {
+      // Save address to backend
       const savedAddress = await saveAddress(addressData);
+      console.log("Address saved successfully:", savedAddress);
       setAddress(savedAddress);
       setIsAddressSubmitted(true);
       toast.success("Address saved successfully.", { closeButton: true, position: "bottom-center" });
     } catch (error) {
-      toast.error("Failed to save address.", { closeButton: true, position: "bottom-center" });
+      toast.error("Failed to save address. Please ensure you are logged in.", {
+        closeButton: true,
+        position: "bottom-center",
+      });
+      console.error("Error saving address:", error);
     }
   };
-
+  
   const handleSelectCard = (event) => {
+    console.log("Selected card:", event.target.value);
     setSelectedCard(event.target.value);
   };
 
@@ -124,7 +182,10 @@ const Checkout = ({ setCheckout }) => {
               <h3 className="mb-4 text-xl font-medium text-gray-900 dark:text-white">
                 <i className="bi bi-geo-alt mr-2"></i>Delivery Address
               </h3>
-              <AddressForm onSubmit={handleAddressSubmit} />
+              <AddressForm
+                onSubmit={handleAddressSubmit}
+                address={address} // Pass the address data to pre-fill form
+              />
             </div>
 
             <h3 className="mb-4 text-xl font-medium text-gray-900 dark:text-white">
@@ -171,4 +232,10 @@ const Checkout = ({ setCheckout }) => {
 };
 
 export default Checkout;
+
+
+
+
+
+
 

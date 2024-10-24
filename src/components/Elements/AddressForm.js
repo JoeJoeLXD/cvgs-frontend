@@ -33,7 +33,12 @@ const AddressForm = ({ onSubmit }) => {
         .required("Postal code is required"),
     }),
     onSubmit: (values) => {
-      onSubmit(values);
+      const fullName = `${values.firstName} ${values.lastName}`.trim();
+      const addressData = {
+        ...values,
+        fullName, // Add fullName field combining firstName and lastName
+      };
+      onSubmit(addressData);
     },
   });
 
@@ -221,4 +226,3 @@ const AddressForm = ({ onSubmit }) => {
 };
 
 export default AddressForm;
-

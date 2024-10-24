@@ -28,7 +28,7 @@ const ProductDetail = () => {
     "/assets/images/10002.avif",
     "/assets/images/10003.avif",
     "/assets/images/10004.avif",
-    "/assets/images/10005.avif"
+    "/assets/images/10005.avif",
   ];
 
   useEffect(() => {
@@ -40,13 +40,9 @@ const ProductDetail = () => {
         setNumberOfRatings(data.gameReviews?.$values.length || 0);
         setUserRating(data.userRating || 0);
 
-        if (data.recommendations) {
-          const allProducts = await getProductList();
-          const recommended = allProducts.filter((prod) =>
-            data.recommendations.includes(prod.id)
-          );
-          setRecommendedProducts(recommended);
-        }
+        const allProducts = await getProductList();
+        const recommended = allProducts.filter((prod) => prod.id !== id);
+        setRecommendedProducts(getRandomRecommendedGames(recommended));
       } catch (error) {
         toast.error(error.message, {
           closeButton: true,
@@ -87,6 +83,15 @@ const ProductDetail = () => {
     setAverageRating(newAverageRating);
     setNumberOfRatings(newNumberOfRatings);
     toast.success(`You rated this game ${rating} stars!`);
+  };
+
+  // Helper function to randomly select 2 recommended games from the list
+  const getRandomRecommendedGames = (games) => {
+    if (games.length <= 2) {
+      return games; // Return all games if there are 2 or fewer
+    }
+    const shuffled = [...games].sort(() => 0.5 - Math.random()); // Shuffle the games array
+    return shuffled.slice(0, 2); // Get the first two games
   };
 
   // Ensure there's always an image, either from the product or a random fallback
@@ -191,9 +196,13 @@ const ProductDetail = () => {
           Rate this Game
         </h2>
         <div className="flex items-center justify-center">
-          <RatingInput currentRating={userRating} onSubmit={handleRatingSubmit} />
+          <RatingInput
+            currentRating={userRating}
+            onSubmit={handleRatingSubmit}
+          />
           <span className="ml-3 text-lg text-gray-900 dark:text-slate-200">
-            Average Rating: {averageRating.toFixed(1)} ({numberOfRatings} Ratings)
+            Average Rating: {averageRating.toFixed(1)} ({numberOfRatings}{" "}
+            Ratings)
           </span>
         </div>
       </section>
@@ -205,30 +214,47 @@ const ProductDetail = () => {
         </h2>
         <div className="flex flex-wrap justify-around">
           {recommendedProducts.length > 0 ? (
-            recommendedProducts.map((recProduct) => (
-              <div key={recProduct.id} className="max-w-xs my-3">
-                <img
-                  className="rounded w-full h-auto max-h-48 object-cover"
-                  src={
-                    recProduct.poster ||
-                    `/assets/images/${imagesList[Math.floor(Math.random() * imagesList.length)]}.avif`
-                  } // Random image or poster
-                  alt={recProduct.name}
-                />
-                <p className="text-lg font-semibold text-gray-900 dark:text-slate-200 mt-3">
-                  {recProduct.name}
-                </p>
-                <p className="text-sm text-gray-500 dark:text-slate-400">
-                  ${recProduct.price}
-                </p>
-                <button
-                  onClick={() => navigate(`/products/${recProduct.id}`)}
-                  className="text-blue-500 hover:underline mt-2"
-                >
-                  View Details
-                </button>
-              </div>
-            ))
+            recommendedProducts.map((recProduct) => {
+              // Log the recommended product to see the available fields
+              console.log("Recommended Product:", recProduct);
+
+              // Determine the correct product name and image to use
+              const recProductName =
+                recProduct.name || recProduct.gameName || "Unknown Game";
+              const recProductImage =
+                recProduct.poster ||
+                recProduct.thumbnailPath ||
+                imagesList[Math.floor(Math.random() * imagesList.length)]; // Random image or fallback
+
+              return (
+                <div key={recProduct.id} className="max-w-xs my-3">
+                  <img
+                    className="rounded w-full h-auto max-h-48 object-cover"
+                    src={recProductImage}
+                    alt={recProductName}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src =
+                        imagesList[
+                          Math.floor(Math.random() * imagesList.length)
+                        ];
+                    }}
+                  />
+                  <p className="text-lg font-semibold text-gray-900 dark:text-slate-200 mt-3">
+                    {recProductName}
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400">
+                    ${recProduct.price ? recProduct.price.toFixed(2) : "N/A"}
+                  </p>
+                  <button
+                    onClick={() => navigate(`/products/${recProduct.id}`)}
+                    className="text-blue-500 hover:underline mt-2"
+                  >
+                    View Details
+                  </button>
+                </div>
+              );
+            })
           ) : (
             <p className="text-center text-gray-500 dark:text-slate-400">
               No recommendations available.
@@ -241,5 +267,3 @@ const ProductDetail = () => {
 };
 
 export default ProductDetail;
-
-

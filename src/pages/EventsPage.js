@@ -14,6 +14,7 @@ const EventsPage = () => {
     async function fetchEvents() {
       try {
         const response = await fetch("https://localhost:7245/api/Events");
+        if (!response.ok) throw new Error("Failed to fetch events");
         const data = await response.json();
         setEvents(data["$values"]);
         setLoading(false);
@@ -37,18 +38,17 @@ const EventsPage = () => {
       }
 
       try {
-        const response = await fetch(`https://localhost:7245/api/EventRegisters/user/${userId}`); // Adjust this endpoint according to your backend
-        if (response.ok) {
-          const data = await response.json();
-
-          // Ensure correct response format
-          if (data && Array.isArray(data)) {
-            setRegisteredEvents(data.map((reg) => reg.eventId)); // Store registered event IDs
-          } else {
-            console.error("Unexpected data format:", data);
-          }
+        // Adjust this URL according to your backend implementation
+        const response = await fetch(`https://localhost:7245/api/EventRegisters?userId=${userId}`); 
+        if (!response.ok) throw new Error(`Failed to fetch registered events. Status: ${response.status}`);
+        
+        const data = await response.json();
+        
+        // Ensure correct response format
+        if (data && Array.isArray(data)) {
+          setRegisteredEvents(data.map((reg) => reg.eventId)); // Store registered event IDs
         } else {
-          console.error(`Failed to fetch registered events. Status: ${response.status}`);
+          console.error("Unexpected data format:", data);
         }
       } catch (error) {
         console.error("Error fetching registered events:", error);
@@ -60,39 +60,45 @@ const EventsPage = () => {
 
   // Handle registering for an event
   const handleRegister = async (eventId) => {
-    const userId = getSession("userId"); // Fetch the user ID from session storage
-
-    // Ensure userId is available
+    const userId = getSession("userId");
+  
     if (!userId) {
       toast.error("You must be logged in to register for an event.");
       return;
     }
-
+  
+    if (!eventId) {
+      console.error("Invalid eventId:", eventId);
+      toast.error("Invalid event ID. Please try again.");
+      return;
+    }
+  
     try {
+      console.log("Registering for event:", { eventId, userId }); // Log data for debugging
+  
       const response = await fetch("https://localhost:7245/api/EventRegisters", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ eventId, userId }), // Send the correct eventId and userId
+        body: JSON.stringify({ eventId, userId }),
       });
-
-      const responseData = await response.json(); 
-
+  
+      const responseData = await response.json();
+  
       if (response.ok) {
-        // Update registered events in the UI
-        setRegisteredEvents((prev) => [...prev, eventId]); // Add the eventId to registered events
+        setRegisteredEvents((prev) => [...prev, eventId]);
         toast.success(`Successfully registered for event ID: ${eventId}`);
       } else {
         console.error("Response error:", responseData);
-        toast.error(responseData.message || "Failed to register for the event.");
+        toast.error(responseData.title || "Failed to register for the event.");
       }
     } catch (error) {
       console.error("Error registering for event:", error);
       toast.error("Failed to register for the event.");
     }
   };
-
+  
   // Check if the user is already registered for the event
   const isRegistered = (eventId) => registeredEvents.includes(eventId);
 

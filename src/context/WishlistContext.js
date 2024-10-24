@@ -18,9 +18,9 @@ export const WishlistProvider = ({ children }) => {
         const memberID = sessionStorage.getItem("userId"); // Retrieve memberID dynamically
         const token = sessionStorage.getItem("token");     // Retrieve token for authentication
 
-        if (!memberID || !token) {
-          throw new Error("User is not authenticated");
-        }
+        // if (!memberID || !token) {
+        //   throw new Error("User is not authenticated");
+        // }
 
         const response = await fetch(`https://localhost:7245/api/WishLists?memberID=${memberID}`, {
           headers: {

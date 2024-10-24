@@ -107,7 +107,7 @@ const Profile = () => {
             htmlFor="displayName"
             className="block text-sm font-medium dark:text-white"
           >
-            Name
+            Display Name
           </label>
           <input
             type="text"
