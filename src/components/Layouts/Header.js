@@ -105,8 +105,8 @@ const Header = () => {
             </div>
           </div>
 
-          {/* Cart Icon - Only show if user is logged in */}
-          {token && (
+          {/* Cart Icon - Only show if user is logged in and not an admin */}
+          {token && userRole && userRole.toLowerCase() !== "admin" && (
             <div className="relative group">
               <Link
                 to="/cart"

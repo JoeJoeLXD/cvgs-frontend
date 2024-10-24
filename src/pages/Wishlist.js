@@ -39,7 +39,7 @@ const Wishlist = () => {
     }
     try {
       removeFromWishlist(id);
-      toast.success("Removed from wishlist.");
+      //toast.success("Removed from wishlist.");
     } catch (error) {
       toast.error("Failed to remove item.");
     }

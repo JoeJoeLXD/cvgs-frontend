@@ -72,11 +72,14 @@ export async function login(authDetail) {
       sessionStorage.setItem("displayName", userData.user.displayName);
     }
 
-    // Fetch the latest profile data after login to ensure session storage has updated data
+    const userRole = sessionStorage.getItem("role");
+    if (userRole && userRole.toLowerCase() !== "admin") {
+      // Fetch the latest profile data after login to ensure session storage has updated data
     const updatedProfile = await getUserProfile();
-    sessionStorage.setItem("displayName", updatedProfile.displayName); // Update display name
-    sessionStorage.setItem("email", updatedProfile.email); // Update email if necessary
-    sessionStorage.setItem("role", updatedProfile.role); // Update role
+      sessionStorage.setItem("displayName", updatedProfile.displayName); // Update display name
+      sessionStorage.setItem("email", updatedProfile.email); // Update email if necessary
+      sessionStorage.setItem("role", updatedProfile.role); // Update role
+    }
 
     // Trigger custom event to signal login
     window.dispatchEvent(new Event("storage"));

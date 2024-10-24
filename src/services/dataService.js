@@ -1,4 +1,4 @@
-// src/services/dataService.js 
+// src/services/dataService.js
 import { toast } from "react-toastify";
 
 // Update user profile
@@ -48,10 +48,40 @@ export function getSession(key) {
   return sessionStorage.getItem(key); // Retrieve item as string
 }
 
+export async function getUserNameById(userId) {
+  const url = `https://localhost:7245/api/UserProfiles/${userId}`;
+
+  const requestOptions = {
+    method: "GET",
+  };
+
+  try {
+    const response = await fetch(url, requestOptions);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      toast.error(`Error ${response.status}: ${errorText}`);
+      throw new Error(`Error ${response.status}: ${errorText}`);
+    }
+
+    const data = await response.json();
+    return data.displayName;
+  } catch (error) {
+    console.error("Error fetching user name:", error);
+    toast.error("Error fetching user name.");
+    throw error;
+  }
+}
+
 // Fetch user details
 export async function getUserProfile() {
+  const userRole = getSession("role");
   const token = getSession("token");
   const userId = getSession("userId");
+
+  if (userRole && userRole.toLowerCase() === "admin") {
+    throw new Error("User is an admin");
+  }
 
   if (!token || !userId) {
     toast.error("User is not authenticated");
@@ -64,7 +94,7 @@ export async function getUserProfile() {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     },
   };
 

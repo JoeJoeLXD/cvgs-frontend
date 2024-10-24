@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useCart, useWishlist } from "../../context";
 import Rating from "./Rating";
 import RatingInput from "./RatingInput";
-import { toast } from 'react-toastify';
+//import { toast } from "react-toastify";
 
 const ProductCard = ({ product = {} }) => {
   const { cartList, addToCart, removeFromCart } = useCart();
@@ -30,12 +30,10 @@ const ProductCard = ({ product = {} }) => {
   } = product;
 
   useEffect(() => {
-    console.log("Wishlist state: ", wishlist); // Log wishlist state
     const productInCart = cartList.find((item) => item.id === product.id);
     const productInWishlist = wishlist.find((item) => item.id === product.id);
     setInCart(Boolean(productInCart));
-    setInWishlist(Boolean(productInWishlist)); // Update inWishlist state
-    console.log("Is in wishlist: ", Boolean(productInWishlist)); // Log state for debugging
+    setInWishlist(Boolean(productInWishlist));
   }, [cartList, wishlist, product.id]);
 
   const handleRatingSubmit = (rating) => {
@@ -59,29 +57,19 @@ const ProductCard = ({ product = {} }) => {
     }
   };
 
-  const handleAddToWishlist = async () => {
+  const handleToggleWishlist = () => {
     if (inWishlist) {
-      toast.info("This item is already in your wishlist.");
-      return;
-    }
-    try {
-      await addToWishlist(product);
-      setInWishlist(true);
-      toast.success("Added to wishlist!", { autoClose: 1500 }); // Auto-close after 1.5 seconds
-    } catch (error) {
-      toast.error("Failed to add to wishlist.");
-      console.error("Error adding to wishlist:", error);
-    }
-  };
-
-  const handleRemoveFromWishlist = async () => {
-    try {
-      await removeFromWishlist(product.id);
-      setInWishlist(false);
-      toast.success("Removed from wishlist!", { autoClose: 1500 });
-    } catch (error) {
-      toast.error("Failed to remove from wishlist.");
-      console.error("Error removing from wishlist:", error);
+      handleAction(() => {
+        removeFromWishlist(product.id);
+        setInWishlist(false);
+        //toast.success("Removed from wishlist!", { autoClose: 1500 });
+      });
+    } else {
+      handleAction(() => {
+        addToWishlist(product);
+        setInWishlist(true);
+        //toast.success("Added to wishlist!", { autoClose: 1500 });
+      });
     }
   };
 
@@ -116,7 +104,10 @@ const ProductCard = ({ product = {} }) => {
           <p className="text-lg font-semibold text-gray-900 dark:text-slate-200 mb-2">
             Rate this game:
           </p>
-          <RatingInput currentRating={userRating} onSubmit={handleRatingSubmit} />
+          <RatingInput
+            currentRating={userRating}
+            onSubmit={handleRatingSubmit}
+          />
         </div>
         <div className="flex justify-between items-center">
           <span className="text-2xl dark:text-gray-200">
@@ -127,7 +118,10 @@ const ProductCard = ({ product = {} }) => {
           <div className="flex flex-col space-y-2">
             {!inCart ? (
               <button
-                onClick={() => handleAction(() => addToCart(product))}
+                onClick={() => handleAction(() => {
+                  addToCart(product);
+                  setInCart(true);
+                })}
                 className={`inline-flex items-center justify-center py-2 px-3 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 ${
                   gamesInStock ? "" : "cursor-not-allowed opacity-50"
                 }`}
@@ -137,7 +131,10 @@ const ProductCard = ({ product = {} }) => {
               </button>
             ) : (
               <button
-                onClick={() => removeFromCart(product)}
+                onClick={() => handleAction(() => {
+                  removeFromCart(product);
+                  setInCart(false);
+                })}
                 className={`inline-flex items-center justify-center py-2 px-3 text-sm font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-800 ${
                   gamesInStock ? "" : "cursor-not-allowed opacity-50"
                 }`}
@@ -148,21 +145,14 @@ const ProductCard = ({ product = {} }) => {
             )}
 
             {/* Wishlist Button */}
-            {!inWishlist ? (
-              <button
-                onClick={handleAddToWishlist}
-                className="inline-flex items-center justify-center py-2 px-3 text-sm font-medium text-center text-white bg-green-600 rounded-lg hover:bg-green-700"
-              >
-                Add to Wishlist
-              </button>
-            ) : (
-              <button
-                onClick={handleRemoveFromWishlist}
-                className="inline-flex items-center justify-center py-2 px-3 text-sm font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-700"
-              >
-                Remove from Wishlist
-              </button>
-            )}
+            <button
+              onClick={handleToggleWishlist}
+              className={`inline-flex items-center justify-center py-2 px-3 text-sm font-medium text-center rounded-lg text-white ${
+                inWishlist ? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"
+              }`}
+            >
+              {inWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
+            </button>
           </div>
         </div>
       </div>
@@ -171,9 +161,3 @@ const ProductCard = ({ product = {} }) => {
 };
 
 export default ProductCard;
-
-
-
-
-
-

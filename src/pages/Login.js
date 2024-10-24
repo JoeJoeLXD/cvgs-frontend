@@ -1,6 +1,6 @@
 // src/pages/Login.js
 import React, { useRef, useState } from "react";
-import { useNavigate, Link } from "react-router-dom"; 
+import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import useTitle from "../hooks/useTitle";
 import { login, resetPassword } from "../services";
@@ -12,7 +12,7 @@ const Login = ({ setUserEmail }) => {
   const passwordRef = useRef();
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
-  
+
   // State to track login attempts
   const [loginAttempts, setLoginAttempts] = useState(0);
   const maxAttempts = 3; // Maximum allowed attempts
@@ -38,8 +38,15 @@ const Login = ({ setUserEmail }) => {
       const data = await login(authDetail);
 
       if (data.accessToken) {
+        // Store token and userId in session storage immediately after successful login
+        sessionStorage.setItem("token", data.accessToken);
+        sessionStorage.setItem("userId", data.user.id);
         setUserEmail(data.user.email); // Update user email in the app
-        navigate("/"); // Redirect to home or admin page as needed
+
+        // Add a slight delay to ensure session data is fully saved
+        setTimeout(() => {
+          navigate("/"); // Redirect to home or admin page
+        }, 300);
       } else {
         setLoginAttempts((prev) => prev + 1); // Increase failed attempt count
         toast.error("Login failed. Please check your credentials.", {
@@ -51,14 +58,16 @@ const Login = ({ setUserEmail }) => {
       setLoginAttempts((prev) => prev + 1); // Increase failed attempt count
 
       // Check for different error formats and provide a fallback message
-      const errorMessage = error.response?.data?.message || error.message || "An error occurred during login. Please try again.";
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "An error occurred during login. Please try again.";
       toast.error(errorMessage, {
         closeButton: true,
         position: "bottom-center",
       });
     }
   }
-
   // Handle Password Reset
   async function handleResetPassword() {
     try {
@@ -70,21 +79,28 @@ const Login = ({ setUserEmail }) => {
         });
         setIsResettingPassword(false);
       } else {
-        const errorData = await  response.text()//  the response is plain text
-        toast.error(`Error: ${errorData || 'Error sending password reset email. Please try again.'}`, {
-          closeButton: true,
-          position: "bottom-center",
-        });
+        const errorData = await response.text(); //  the response is plain text
+        toast.error(
+          `Error: ${
+            errorData || "Error sending password reset email. Please try again."
+          }`,
+          {
+            closeButton: true,
+            position: "bottom-center",
+          }
+        );
       }
 
       // toast.success(data.message || "Password reset email sent.", {
       //   closeButton: true,
       //   position: "bottom-center",
       // });
-     
     } catch (error) {
       // Check for different error formats and provide a fallback message
-      const errorMessage = error.response?.data?.message || error.message || "Failed to send password reset email. Please try again.";
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to send password reset email. Please try again.";
       toast.error(errorMessage, {
         closeButton: true,
         position: "bottom-center",
@@ -195,4 +211,3 @@ const Login = ({ setUserEmail }) => {
 };
 
 export default Login;
-

@@ -1,5 +1,4 @@
 // src/pages/ProductDetail.js
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -7,6 +6,7 @@ import { Rating, RatingInput } from "../components/Elements";
 import useTitle from "../hooks/useTitle";
 import { useCart, useWishlist } from "../context";
 import { getProduct, getProductList } from "../services";
+import { getUserNameById } from "../services/dataService";
 
 const ProductDetail = () => {
   const { cartList, addToCart, removeFromCart } = useCart();
@@ -18,6 +18,7 @@ const ProductDetail = () => {
   const [userRating, setUserRating] = useState(0);
   const [averageRating, setAverageRating] = useState(0);
   const [numberOfRatings, setNumberOfRatings] = useState(0);
+  const [approvedReviews, setApprovedReviews] = useState([]);
   const { id } = useParams();
   const navigate = useNavigate();
   useTitle(product.gameName || "Product Detail");
@@ -35,10 +36,25 @@ const ProductDetail = () => {
     async function fetchProducts() {
       try {
         const data = await getProduct(id);
+        console.log("Fetched Product Data:", data);
         setProduct(data);
         setAverageRating(data.rate || 0);
         setNumberOfRatings(data.gameReviews?.$values.length || 0);
         setUserRating(data.userRating || 0);
+
+        // Filter approved reviews
+        const approved = data.gameReviews?.$values.filter(
+          (review) => review.approved === true
+        );
+
+        const reviewsWithUsers = await Promise.all(
+          approved.map(async (review) => {
+            const userName = await getUserNameById(review.memberID);
+            return { ...review, user: userName };
+          })
+        );
+
+        setApprovedReviews(reviewsWithUsers || []);
 
         const allProducts = await getProductList();
         const recommended = allProducts.filter((prod) => prod.id !== id);
@@ -100,7 +116,7 @@ const ProductDetail = () => {
     imagesList[Math.floor(Math.random() * imagesList.length)];
 
   return (
-    <main>
+    <main className="mx-4 lg:mx-20">
       <section>
         <h1 className="mt-10 mb-5 text-4xl text-center font-bold text-gray-900 dark:text-slate-200">
           {product.gameName}
@@ -121,9 +137,9 @@ const ProductDetail = () => {
               <span className="mr-1">$</span>
               <span className="">{product.price}</span>
             </p>
-            <p className="my-3">
+            <div className="my-3">
               <Rating rating={averageRating} />
-            </p>
+            </div>
             <p className="my-4 select-none">
               {product.gamesInStock > 0 ? (
                 <span className="font-semibold text-emerald-600 border bg-slate-100 rounded-lg px-3 py-1 mr-2">
@@ -205,6 +221,40 @@ const ProductDetail = () => {
             Ratings)
           </span>
         </div>
+      </section>
+
+      {/* Approved Reviews Section */}
+      <section className="my-10 text-center">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-slate-200 mb-5">
+          Approved Reviews
+        </h2>
+        {approvedReviews.length > 0 ? (
+          <div className="space-y-6">
+            {approvedReviews.map((review) => {
+              console.log("User Profile Data:", review.userProfile); // Add this log to debug
+
+              return (
+                <div
+                  key={review.reviewID}
+                  className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg"
+                >
+                  <p className="text-lg font-semibold text-gray-900 dark:text-slate-200">
+                    {review.userProfile && review.userProfile.displayName
+                      ? review.userProfile.displayName
+                      : review.user || "Anonymous User"}
+                  </p>
+                  <p className="text-gray-700 dark:text-slate-400">
+                    {review.reviewText}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="text-center text-gray-500 dark:text-slate-400">
+            No approved reviews available.
+          </p>
+        )}
       </section>
 
       {/* Game Recommendations Section */}
