@@ -1,23 +1,25 @@
 // src/services/wishlistService.js
-
-import { getSession } from "./dataService";
+import { toast } from 'react-toastify';
+import { getSession } from "./dataService";  // Ensure dataService is handling session retrieval properly
 
 /**
  * Fetches the current user's wishlist.
  */
 export async function getWishlist() {
   const token = getSession("token");
-  const userId = getSession("cbid");
+  const memberID = getSession("userId");
 
-  if (!token || !userId) {
+  if (!token || !memberID) {
+    toast.error("User is not authenticated");
     throw new Error("User is not authenticated");
   }
 
-  const url = `http://localhost:8000/wishlists?userId=${userId}`;
+  const url = `https://localhost:7245/api/WishLists?memberID=${memberID}`;
 
   const requestOptions = {
     method: "GET",
     headers: {
+      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
   };
@@ -27,48 +29,45 @@ export async function getWishlist() {
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error(`Error fetching wishlist: ${errorText}`);
       throw new Error(`Error ${response.status}: ${errorText}`);
     }
 
     const data = await response.json();
+    console.log("Wishlist fetched successfully:", data);
     return data;
   } catch (error) {
-    console.error("Error fetching wishlist:", error);
+    console.error("Error fetching wishlist:", error.message);
+    toast.error("Error fetching wishlist");
     throw error;
   }
 }
 
 /**
  * Adds a product to the user's wishlist.
- * @param {number} productId - ID of the product to add.
+ * @param {string} gameID - ID of the product to add.
  */
-export async function addToWishlist(productId) {
+export async function addToWishlist(gameID) {
   const token = getSession("token");
-  const userId = getSession("cbid");
+  const memberID = getSession("userId");
 
-  if (!token || !userId) {
+  if (!token || !memberID) {
+    toast.error("User is not authenticated");
     throw new Error("User is not authenticated");
   }
 
-  // Check if the product is already in the wishlist
-  const existingWishlist = await fetch(`http://localhost:8000/wishlists?userId=${userId}&productId=${productId}`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  }).then(res => res.json());
+  console.log("Adding to wishlist: Member ID:", memberID, "Game ID:", gameID);
 
-  if (existingWishlist.length > 0) {
-    throw new Error("Product is already in your wishlist.");
-  }
-
+  // Payload for adding an item to the wishlist
   const wishlistItem = {
-    userId: Number(userId),
-    productId: Number(productId),
-    addedAt: new Date().toISOString(),
+    memberID: String(memberID),  // Ensure memberID is a string
+    gameID: gameID,              // Ensure gameID is in GUID format
+    dateAdded: new Date().toISOString(),  // ISO format for dateAdded
   };
 
-  const url = `http://localhost:8000/wishlists`;
+  console.log("Payload being sent:", JSON.stringify(wishlistItem));
+
+  const url = `https://localhost:7245/api/WishLists`;
 
   const requestOptions = {
     method: "POST",
@@ -83,34 +82,42 @@ export async function addToWishlist(productId) {
     const response = await fetch(url, requestOptions);
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Error ${response.status}: ${errorText}`);
+      const errorData = await response.json();
+      console.error("Error adding to wishlist:", errorData);
+      throw new Error(`Error ${response.status}: ${errorData.title}`);
     }
 
     const data = await response.json();
+    toast.success("Added to wishlist successfully!");
+    console.log("Added to wishlist:", data);
     return data;
   } catch (error) {
-    console.error("Error adding to wishlist:", error);
+    console.error("Error adding to wishlist:", error.message);
+    toast.error("Failed to add product to wishlist");
     throw error;
   }
 }
 
 /**
  * Removes a product from the user's wishlist.
- * @param {number} wishlistId - ID of the wishlist entry to remove.
+ * @param {string} wishlistId - ID of the wishlist entry to remove.
  */
 export async function removeFromWishlist(wishlistId) {
   const token = getSession("token");
 
   if (!token) {
+    toast.error("User is not authenticated");
     throw new Error("User is not authenticated");
   }
 
-  const url = `http://localhost:8000/wishlists/${wishlistId}`;
+  console.log("Removing wishlist item with ID:", wishlistId);
+
+  const url = `https://localhost:7245/api/WishLists/${wishlistId}`;
 
   const requestOptions = {
     method: "DELETE",
     headers: {
+      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
   };
@@ -120,12 +127,16 @@ export async function removeFromWishlist(wishlistId) {
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error(`Error removing from wishlist: ${errorText}`);
       throw new Error(`Error ${response.status}: ${errorText}`);
     }
 
+    toast.success("Removed from wishlist successfully!");
+    console.log("Removed from wishlist:", wishlistId);
     return true;
   } catch (error) {
-    console.error("Error removing from wishlist:", error);
+    console.error("Error removing from wishlist:", error.message);
+    toast.error("Failed to remove product from wishlist");
     throw error;
   }
 }

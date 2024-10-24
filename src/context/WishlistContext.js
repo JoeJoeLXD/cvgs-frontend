@@ -1,5 +1,4 @@
 // src/context/WishlistContext.js
-// src/context/WishlistContext.js
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "react-toastify";
 
@@ -16,7 +15,19 @@ export const WishlistProvider = ({ children }) => {
   useEffect(() => {
     const fetchWishlist = async () => {
       try {
-        const response = await fetch("https://localhost:7245/api/WishLists");
+        const memberID = sessionStorage.getItem("userId"); // Retrieve memberID dynamically
+        const token = sessionStorage.getItem("token");     // Retrieve token for authentication
+
+        if (!memberID || !token) {
+          throw new Error("User is not authenticated");
+        }
+
+        const response = await fetch(`https://localhost:7245/api/WishLists?memberID=${memberID}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,  // Add token for auth
+          }
+        });
+
         if (!response.ok) {
           throw new Error("Failed to fetch wishlist");
         }
@@ -24,14 +35,9 @@ export const WishlistProvider = ({ children }) => {
         const data = await response.json();
         console.log("Fetched wishlist data:", data); // Log fetched data for debugging
 
-        // Map the wishlist to actual games
         const fetchedWishlist = await Promise.all(
           data.$values.map(async (wishItem) => {
-            // Fetch game details using gameID from wishlist
-            if (
-              wishItem.gameID &&
-              wishItem.gameID !== "00000000-0000-0000-0000-000000000000"
-            ) {
+            if (wishItem.gameID) {
               try {
                 const gameResponse = await fetch(
                   `https://localhost:7245/api/Games/${wishItem.gameID}`
@@ -50,6 +56,7 @@ export const WishlistProvider = ({ children }) => {
             }
           })
         );
+
         setWishlist(fetchedWishlist);
       } catch (error) {
         toast.error("Error fetching wishlist: " + error.message);
@@ -62,24 +69,30 @@ export const WishlistProvider = ({ children }) => {
   // Function to remove a product from the wishlist via the backend API
   const removeFromWishlist = async (id) => {
     try {
+      const memberID = sessionStorage.getItem("userId"); // Retrieve memberID dynamically
+      const token = sessionStorage.getItem("token");     // Retrieve token for authentication
+
+      if (!memberID || !token) {
+        throw new Error("User is not authenticated");
+      }
+
       console.log(`Attempting to remove wishlist item with ID: ${id}`);
       const response = await fetch(
-        `https://localhost:7245/api/WishLists/${id}`,
+        `https://localhost:7245/api/WishLists/${id}?memberID=${memberID}`,
         {
           method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,  // Add token for auth
+          },
         }
       );
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(
-          errorData?.message || "Failed to remove product from wishlist"
-        );
+        throw new Error(errorData?.message || "Failed to remove product from wishlist");
       }
 
-      setWishlist((prevWishlist) =>
-        prevWishlist.filter((item) => item.wishListID !== id)
-      );
+      setWishlist((prevWishlist) => prevWishlist.filter((item) => item.wishListID !== id));
       toast.success("Product removed from wishlist!");
     } catch (error) {
       toast.error("Error removing from wishlist: " + error.message);
@@ -90,31 +103,44 @@ export const WishlistProvider = ({ children }) => {
   // Function to add a product to the wishlist via the backend API
   const addToWishlist = async (product) => {
     try {
+      const memberID = sessionStorage.getItem("userId"); // Retrieve memberID dynamically
+      const token = sessionStorage.getItem("token");     // Retrieve token for authentication
+
+      if (!memberID || !token) {
+        throw new Error("User is not authenticated");
+      }
+
       console.log("Adding to wishlist: ", product); // Log the product being added
   
+      const payload = {
+        gameID: product.id, // Assuming `product.id` is the game's GUID
+        memberID: memberID, // Dynamic memberID
+        dateAdded: new Date().toISOString(),
+      };
+
       const response = await fetch("https://localhost:7245/api/WishLists", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,  // Add token for auth
         },
-        body: JSON.stringify({ gameID: product.id, memberID: 1 }), // Assuming memberID = 1
+        body: JSON.stringify(payload),
       });
   
-      const responseData = await response.json(); // Parse JSON response
-  
       if (!response.ok) {
+        const responseData = await response.json();
         console.error("Failed to add to wishlist: ", responseData);
         throw new Error(responseData.message || "Failed to add product to wishlist");
       }
   
+      const responseData = await response.json();
       setWishlist((prevWishlist) => [...prevWishlist, { ...responseData, game: product }]);
       toast.success("Product added to wishlist!");
     } catch (error) {
-      console.error("Error adding to wishlist: ", error.message); // Log the error
+      console.error("Error adding to wishlist: ", error.message); // Log the error for debugging
       toast.error("Error adding to wishlist: " + error.message);
     }
   };
-  
 
   return (
     <WishlistContext.Provider
@@ -124,4 +150,6 @@ export const WishlistProvider = ({ children }) => {
     </WishlistContext.Provider>
   );
 };
+
+
 

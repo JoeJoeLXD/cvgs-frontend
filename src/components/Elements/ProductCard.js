@@ -1,18 +1,19 @@
 // src/components/Elements/ProductCard.js
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom"; // Import useNavigate for redirection
+import { Link, useNavigate } from "react-router-dom";
 import { useCart, useWishlist } from "../../context";
 import Rating from "./Rating";
 import RatingInput from "./RatingInput";
+import { toast } from 'react-toastify';
 
 const ProductCard = ({ product = {} }) => {
   const { cartList, addToCart, removeFromCart } = useCart();
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
-  const navigate = useNavigate(); // useNavigate hook for redirection
+  const navigate = useNavigate();
 
   const [inCart, setInCart] = useState(false);
   const [inWishlist, setInWishlist] = useState(false);
-  const [averageRating, setAverageRating] = useState(product.rate || 0); // Adjusted to backend field
+  const [averageRating, setAverageRating] = useState(product.rate || 0);
   const [numberOfRatings, setNumberOfRatings] = useState(
     product.gameReviews?.$values.length || 0
   );
@@ -20,22 +21,23 @@ const ProductCard = ({ product = {} }) => {
 
   const {
     id,
-    gameName = "Unknown Game", // Updated to backend field
+    gameName = "Unknown Game",
     overview = "No overview available",
-    thumbnailPath = "/assets/images/default-poster.png", // Using default if no thumbnail
+    thumbnailPath = "/assets/images/default-poster.png",
     price = 0,
-    gamesInStock = true, // Updated to backend field
-    gameCategory = {}, // Game category object
+    gamesInStock = true,
+    gameCategory = {},
   } = product;
 
   useEffect(() => {
+    console.log("Wishlist state: ", wishlist); // Log wishlist state
     const productInCart = cartList.find((item) => item.id === product.id);
     const productInWishlist = wishlist.find((item) => item.id === product.id);
     setInCart(Boolean(productInCart));
-    setInWishlist(Boolean(productInWishlist));
+    setInWishlist(Boolean(productInWishlist)); // Update inWishlist state
+    console.log("Is in wishlist: ", Boolean(productInWishlist)); // Log state for debugging
   }, [cartList, wishlist, product.id]);
 
-  // Simulate the rating submission
   const handleRatingSubmit = (rating) => {
     setUserRating(rating);
     const newNumberOfRatings = numberOfRatings + 1;
@@ -47,15 +49,39 @@ const ProductCard = ({ product = {} }) => {
 
   const imagesList = ["10001", "10002", "10003", "10004", "10005"];
 
-  // Check if the user is authenticated
-  const isAuthenticated = !!sessionStorage.getItem('token'); // Use token from sessionStorage
+  const isAuthenticated = !!sessionStorage.getItem("token");
 
-  // Function to handle "Add to Cart" or "Add to Wishlist"
   const handleAction = (actionFn) => {
     if (!isAuthenticated) {
-      navigate("/login"); // Redirect to login if not authenticated
+      navigate("/login");
     } else {
-      actionFn(); // Execute the add to cart or wishlist function if authenticated
+      actionFn();
+    }
+  };
+
+  const handleAddToWishlist = async () => {
+    if (inWishlist) {
+      toast.info("This item is already in your wishlist.");
+      return;
+    }
+    try {
+      await addToWishlist(product);
+      setInWishlist(true);
+      toast.success("Added to wishlist!", { autoClose: 1500 }); // Auto-close after 1.5 seconds
+    } catch (error) {
+      toast.error("Failed to add to wishlist.");
+      console.error("Error adding to wishlist:", error);
+    }
+  };
+
+  const handleRemoveFromWishlist = async () => {
+    try {
+      await removeFromWishlist(product.id);
+      setInWishlist(false);
+      toast.success("Removed from wishlist!", { autoClose: 1500 });
+    } catch (error) {
+      toast.error("Failed to remove from wishlist.");
+      console.error("Error removing from wishlist:", error);
     }
   };
 
@@ -67,7 +93,7 @@ const ProductCard = ({ product = {} }) => {
           src={
             thumbnailPath ||
             `/assets/images/${imagesList[Math.floor(Math.random() * 5)]}.avif`
-          } // Ensure there's always an image
+          }
           alt={gameName}
         />
       </Link>
@@ -80,7 +106,6 @@ const ProductCard = ({ product = {} }) => {
         <p className="mb-3 font-normal text-gray-700 dark:text-gray-400">
           {overview}
         </p>
-        {/* Display the game category */}
         <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3">
           Category: {gameCategory?.name || "Unknown Category"}
         </p>
@@ -91,10 +116,7 @@ const ProductCard = ({ product = {} }) => {
           <p className="text-lg font-semibold text-gray-900 dark:text-slate-200 mb-2">
             Rate this game:
           </p>
-          <RatingInput
-            currentRating={userRating}
-            onSubmit={handleRatingSubmit}
-          />
+          <RatingInput currentRating={userRating} onSubmit={handleRatingSubmit} />
         </div>
         <div className="flex justify-between items-center">
           <span className="text-2xl dark:text-gray-200">
@@ -105,7 +127,7 @@ const ProductCard = ({ product = {} }) => {
           <div className="flex flex-col space-y-2">
             {!inCart ? (
               <button
-                onClick={() => handleAction(() => addToCart(product))} // Redirect or Add to Cart
+                onClick={() => handleAction(() => addToCart(product))}
                 className={`inline-flex items-center justify-center py-2 px-3 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 ${
                   gamesInStock ? "" : "cursor-not-allowed opacity-50"
                 }`}
@@ -125,16 +147,17 @@ const ProductCard = ({ product = {} }) => {
               </button>
             )}
 
+            {/* Wishlist Button */}
             {!inWishlist ? (
               <button
-                onClick={() => handleAction(() => addToWishlist(product))} // Redirect or Add to Wishlist
+                onClick={handleAddToWishlist}
                 className="inline-flex items-center justify-center py-2 px-3 text-sm font-medium text-center text-white bg-green-600 rounded-lg hover:bg-green-700"
               >
                 Add to Wishlist
               </button>
             ) : (
               <button
-                onClick={() => removeFromWishlist(product.id)}
+                onClick={handleRemoveFromWishlist}
                 className="inline-flex items-center justify-center py-2 px-3 text-sm font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-700"
               >
                 Remove from Wishlist
@@ -148,4 +171,9 @@ const ProductCard = ({ product = {} }) => {
 };
 
 export default ProductCard;
+
+
+
+
+
 

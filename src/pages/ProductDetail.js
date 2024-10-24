@@ -1,7 +1,5 @@
 // src/pages/ProductDetail.js
 
-// src/pages/ProductDetail.js
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";

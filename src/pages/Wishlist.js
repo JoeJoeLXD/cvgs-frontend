@@ -7,23 +7,32 @@ import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 
 const Wishlist = () => {
-  const { userId } = useParams(); // Get the userId if it's available (e.g., friend's userId)
+  const { memberID } = useParams(); // Get the memberID if it's available (e.g., friend's memberID)
   const { wishlist, removeFromWishlist } = useWishlist();
   const { getFriends } = useFriendsAndFamily();
-  const [isOwnWishlist] = useState(!userId);
+  const [isOwnWishlist] = useState(!memberID);
   const [canViewWishlist, setCanViewWishlist] = useState(true);
 
+  // List of random fallback images
+  const imagesList = [
+    "/assets/images/10001.avif",
+    "/assets/images/10002.avif",
+    "/assets/images/10003.avif",
+    "/assets/images/10004.avif",
+    "/assets/images/10005.avif"
+  ];
+
   useEffect(() => {
-    if (userId) {
-      // Check if userId is in friends and family list
-      const friends = getFriends(1); // Assuming logged-in userId is 1 for simplicity
-      const isFriend = friends.some((friend) => friend.friendId === parseInt(userId));
+    if (memberID) {
+      // Check if memberID is in friends and family list
+      const friends = getFriends(1); // Assuming logged-in memberID is 1 for simplicity
+      const isFriend = friends.some((friend) => friend.friendId === parseInt(memberID));
       setCanViewWishlist(isFriend);
       if (!isFriend) {
         setCanViewWishlist(false);
       }
     }
-  }, [userId, getFriends]);
+  }, [memberID, getFriends]);
 
   const handleRemove = (id) => {
     if (!isOwnWishlist) {
@@ -39,7 +48,7 @@ const Wishlist = () => {
   };
 
   const handleShareWishlist = () => {
-    const shareUrl = `${window.location.origin}/wishlist/${userId || 'me'}`;
+    const shareUrl = `${window.location.origin}/wishlist/${memberID || 'me'}`;
     if (navigator.share) {
       navigator.share({
         title: 'My Wishlist on GameHub',
@@ -87,7 +96,7 @@ const Wishlist = () => {
             <img
               src={
                 item.game?.poster ||
-                "/assets/images/default-poster.png"
+                imagesList[Math.floor(Math.random() * imagesList.length)] // Random fallback image
               }
               alt={item.game?.gameName || "Unknown Game"}
               className="w-full h-48 object-cover mb-4"
@@ -115,10 +124,5 @@ const Wishlist = () => {
 };
 
 export default Wishlist;
-
-
-
-
-
 
 
