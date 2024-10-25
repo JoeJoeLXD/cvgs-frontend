@@ -115,6 +115,10 @@ const ProductDetail = () => {
     product.thumbnailPath ||
     imagesList[Math.floor(Math.random() * imagesList.length)];
 
+  // Common button classes for consistent styling
+  const buttonClass =
+    "inline-flex items-center justify-center w-64 py-2 text-sm font-medium text-center text-white rounded-lg";
+
   return (
     <main className="mx-4 lg:mx-20">
       <section>
@@ -155,38 +159,38 @@ const ProductDetail = () => {
               {!inCart ? (
                 <button
                   onClick={() => addToCart(product)}
-                  className={`inline-flex items-center justify-center py-2 px-3 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 ${
+                  className={`${buttonClass} bg-blue-700 hover:bg-blue-800 ${
                     product.gamesInStock ? "" : "cursor-not-allowed opacity-50"
                   }`}
                   disabled={!product.gamesInStock}
                 >
-                  Add To Cart <i className="ml-1 bi bi-plus-lg"></i>
+                  Add To Cart <i className="ml-1 bi bi-cart-plus"></i>
                 </button>
               ) : (
                 <button
                   onClick={() => removeFromCart(product)}
-                  className={`inline-flex items-center justify-center py-2 px-3 text-sm font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-800 ${
+                  className={`${buttonClass} bg-red-600 hover:bg-red-800 ${
                     product.gamesInStock ? "" : "cursor-not-allowed opacity-50"
                   }`}
                   disabled={!product.gamesInStock}
                 >
-                  Remove Item <i className="ml-1 bi bi-trash3"></i>
+                  Remove Item <i className="ml-1 bi bi-cart-dash"></i>
                 </button>
               )}
 
               {!inWishlist ? (
                 <button
                   onClick={handleWishlistToggle}
-                  className="inline-flex items-center justify-center py-2 px-3 text-sm font-medium text-center text-white bg-green-600 rounded-lg hover:bg-green-700"
+                  className={`${buttonClass} bg-green-600 hover:bg-green-700`}
                 >
-                  Add To Wishlist <i className="ml-1 bi bi-plus-lg"></i>
+                  Add To Wishlist <i className="ml-1 bi bi-heart"></i>
                 </button>
               ) : (
                 <button
                   onClick={handleWishlistToggle}
-                  className="inline-flex items-center justify-center py-2 px-3 text-sm font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-700"
+                  className={`${buttonClass} bg-red-600 hover:bg-red-700`}
                 >
-                  Remove from Wishlist
+                  Remove from Wishlist <i className="ml-1 bi bi-heart-fill"></i>
                 </button>
               )}
             </p>
@@ -194,13 +198,12 @@ const ProductDetail = () => {
             {/* Write a Review Button */}
             <button
               onClick={handleWriteReview}
-              className="inline-flex items-center justify-center py-2 px-3 mt-4 text-sm font-medium text-center text-white bg-purple-600 rounded-lg hover:bg-purple-700"
+              className={`${buttonClass} bg-purple-600 hover:bg-purple-700 mt-4`}
             >
               Write a Review <i className="ml-1 bi bi-pencil"></i>
             </button>
-
             <p className="text-lg text-gray-900 dark:text-slate-200">
-              {product.long_description || "No additional details available."}
+              {product.long_description || ""}
             </p>
           </div>
         </div>
@@ -224,38 +227,35 @@ const ProductDetail = () => {
       </section>
 
       {/* Approved Reviews Section */}
-      <section className="my-10 text-center">
-        <h2 className="text-2xl font-semibold text-gray-900 dark:text-slate-200 mb-5">
-          Approved Reviews
-        </h2>
-        {approvedReviews.length > 0 ? (
-          <div className="space-y-6">
-            {approvedReviews.map((review) => {
-              console.log("User Profile Data:", review.userProfile); // Add this log to debug
-
-              return (
-                <div
-                  key={review.reviewID}
-                  className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg"
-                >
-                  <p className="text-lg font-semibold text-gray-900 dark:text-slate-200">
-                    {review.userProfile && review.userProfile.displayName
-                      ? review.userProfile.displayName
-                      : review.user || "Anonymous User"}
-                  </p>
-                  <p className="text-gray-700 dark:text-slate-400">
-                    {review.reviewText}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <p className="text-center text-gray-500 dark:text-slate-400">
-            No approved reviews available.
+<section className="my-10">
+  <h2 className="text-2xl font-semibold text-gray-900 dark:text-slate-200 mb-5 text-center">
+    Reviews
+  </h2>
+  {approvedReviews.length > 0 ? (
+    <div className="max-h-80 overflow-y-auto space-y-4 px-4">
+      {approvedReviews.map((review) => (
+        <div
+          key={review.reviewID}
+          className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg"
+        >
+          <p className="text-lg text-gray-900 dark:text-slate-200">
+            Member:{" "}
+            {review.userProfile && review.userProfile.displayName
+              ? review.userProfile.displayName
+              : review.user || "Anonymous User"}
           </p>
-        )}
-      </section>
+          <p className="text-lg text-gray-700 dark:text-slate-400 whitespace-pre-wrap break-words">
+            {review.reviewText}
+          </p>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <p className="text-center text-gray-500 dark:text-slate-400">
+      No approved reviews available.
+    </p>
+  )}
+</section>
 
       {/* Game Recommendations Section */}
       <section className="mt-10 text-center">
@@ -265,7 +265,6 @@ const ProductDetail = () => {
         <div className="flex flex-wrap justify-around">
           {recommendedProducts.length > 0 ? (
             recommendedProducts.map((recProduct) => {
-              // Log the recommended product to see the available fields
               console.log("Recommended Product:", recProduct);
 
               // Determine the correct product name and image to use
@@ -274,7 +273,7 @@ const ProductDetail = () => {
               const recProductImage =
                 recProduct.poster ||
                 recProduct.thumbnailPath ||
-                imagesList[Math.floor(Math.random() * imagesList.length)]; // Random image or fallback
+                imagesList[Math.floor(Math.random() * imagesList.length)];
 
               return (
                 <div key={recProduct.id} className="max-w-xs my-3">

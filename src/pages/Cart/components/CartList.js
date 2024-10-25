@@ -31,7 +31,7 @@ const CartList = () => {
           <div className="flex flex-col p-2 border-b dark:border-slate-700 text-lg dark:text-slate-100">
             <p className="flex justify-between my-2">
               <span className="font-semibold">Total Amount:</span>
-              <span>${total}</span>
+              <span>${total.toFixed(2)}</span>
             </p>
           </div>
           <div className="text-right my-5">

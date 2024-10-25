@@ -118,29 +118,33 @@ const ProductCard = ({ product = {} }) => {
           <div className="flex flex-col space-y-2">
             {!inCart ? (
               <button
-                onClick={() => handleAction(() => {
-                  addToCart(product);
-                  setInCart(true);
-                })}
+                onClick={() =>
+                  handleAction(() => {
+                    addToCart(product);
+                    setInCart(true);
+                  })
+                }
                 className={`inline-flex items-center justify-center py-2 px-3 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 ${
                   gamesInStock ? "" : "cursor-not-allowed opacity-50"
                 }`}
                 disabled={!gamesInStock}
               >
-                Add to Cart <i className="ml-1 bi bi-plus-lg"></i>
+                Add to Cart <i className="ml-1 bi bi-cart-plus"></i>
               </button>
             ) : (
               <button
-                onClick={() => handleAction(() => {
-                  removeFromCart(product);
-                  setInCart(false);
-                })}
+                onClick={() =>
+                  handleAction(() => {
+                    removeFromCart(product);
+                    setInCart(false);
+                  })
+                }
                 className={`inline-flex items-center justify-center py-2 px-3 text-sm font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-800 ${
                   gamesInStock ? "" : "cursor-not-allowed opacity-50"
                 }`}
                 disabled={!gamesInStock}
               >
-                Remove Item <i className="ml-1 bi bi-trash3"></i>
+                Remove Item <i className="ml-1 bi bi-cart-dash"></i>
               </button>
             )}
 
@@ -148,10 +152,20 @@ const ProductCard = ({ product = {} }) => {
             <button
               onClick={handleToggleWishlist}
               className={`inline-flex items-center justify-center py-2 px-3 text-sm font-medium text-center rounded-lg text-white ${
-                inWishlist ? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"
+                inWishlist
+                  ? "bg-red-600 hover:bg-red-700"
+                  : "bg-green-600 hover:bg-green-700"
               }`}
             >
-              {inWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
+              {inWishlist ? (
+                <>
+                  Remove from Wishlist <i className="ml-1 bi bi-heart-fill"></i>
+                </>
+              ) : (
+                <>
+                  Add to Wishlist <i className="ml-1 bi bi-heart"></i>
+                </>
+              )}
             </button>
           </div>
         </div>
