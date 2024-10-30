@@ -5,7 +5,7 @@ import { NavLink } from "react-router-dom";
 
 const AdminPanelNav = () => {
   return (
-    <nav className="bg-gray-100 text-black py-6">
+    <nav className="bg-gray-100 dark:bg-gray-900 text-black dark:text-white py-6">
       <div className="container mx-auto px-0">
         <ul className="flex justify-around">
           <li>
@@ -13,8 +13,8 @@ const AdminPanelNav = () => {
               to="/admin/games"
               className={({ isActive }) =>
                 isActive
-                  ? "text-blue-500 font-bold tracking-wide"
-                  : "text-black hover:bg-gray-300 hover:px-6 hover:py-3 rounded"
+                  ? "text-blue-500 dark:text-blue-400 font-bold tracking-wide"
+                  : "text-black dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 hover:px-6 hover:py-3 rounded transition"
               }
             >
               Manage Games
@@ -25,8 +25,8 @@ const AdminPanelNav = () => {
               to="/admin/events"
               className={({ isActive }) =>
                 isActive
-                  ? "text-blue-500 font-bold tracking-wide"
-                  : "text-black hover:bg-gray-300 hover:px-6 hover:py-3 rounded"
+                  ? "text-blue-500 dark:text-blue-400 font-bold tracking-wide"
+                  : "text-black dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 hover:px-6 hover:py-3 rounded transition"
               }
             >
               Manage Events
@@ -37,8 +37,8 @@ const AdminPanelNav = () => {
               to="/admin/reports"
               className={({ isActive }) =>
                 isActive
-                  ? "text-blue-500 font-bold tracking-wide"
-                  : "text-black hover:bg-gray-300 hover:px-6 hover:py-3 rounded"
+                  ? "text-blue-500 dark:text-blue-400 font-bold tracking-wide"
+                  : "text-black dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 hover:px-6 hover:py-3 rounded transition"
               }
             >
               View Reports
@@ -49,8 +49,8 @@ const AdminPanelNav = () => {
               to="/admin/reviews"
               className={({ isActive }) =>
                 isActive
-                  ? "text-blue-500 font-bold tracking-wide"
-                  : "text-black hover:bg-gray-300 hover:px-6 hover:py-3 rounded"
+                  ? "text-blue-500 dark:text-blue-400 font-bold tracking-wide"
+                  : "text-black dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 hover:px-6 hover:py-3 rounded transition"
               }
             >
               Review Games
@@ -63,4 +63,5 @@ const AdminPanelNav = () => {
 };
 
 export default AdminPanelNav;
+
 

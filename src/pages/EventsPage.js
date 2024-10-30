@@ -28,77 +28,119 @@ const EventsPage = () => {
   }, []);
 
   // Fetch registered events for the current user
-  useEffect(() => {
-    async function fetchRegisteredEvents() {
-      const userId = getSession("userId"); // Fetch the user ID from session storage
+  const fetchRegisteredEvents = async () => {
+    const MemberId = getSession("userId"); // Fetch the user ID from session storage
 
-      if (!userId) {
-        console.error("User is not logged in");
-        return;
-      }
-
-      try {
-        // Adjust this URL according to your backend implementation
-        const response = await fetch(`https://localhost:7245/api/EventRegisters?userId=${userId}`); 
-        if (!response.ok) throw new Error(`Failed to fetch registered events. Status: ${response.status}`);
-        
-        const data = await response.json();
-        
-        // Ensure correct response format
-        if (data && Array.isArray(data)) {
-          setRegisteredEvents(data.map((reg) => reg.eventId)); // Store registered event IDs
-        } else {
-          console.error("Unexpected data format:", data);
-        }
-      } catch (error) {
-        console.error("Error fetching registered events:", error);
-        toast.error("Failed to load registered events.");
-      }
+    if (!MemberId) {
+      console.error("User is not logged in");
+      return;
     }
+
+    try {
+      const response = await fetch(
+        `https://localhost:7245/api/EventRegisters?MemberId=${MemberId}`
+      );
+      if (!response.ok)
+        throw new Error(
+          `Failed to fetch registered events. Status: ${response.status}`
+        );
+
+      const data = await response.json();
+      console.log("Registered events raw response data:", data); // Log data to verify structure
+
+      // Check if `$values` exists and is an array
+      if (data && data["$values"] && Array.isArray(data["$values"])) {
+        setRegisteredEvents(data["$values"].map((reg) => reg.eventId)); // Store registered event IDs
+      } else {
+        console.error("Unexpected data format:", data);
+        toast.error("Unexpected data format for registered events.");
+      }
+    } catch (error) {
+      console.error("Error fetching registered events:", error);
+      toast.error("Failed to load registered events.");
+    }
+  };
+
+  // Call fetchRegisteredEvents on component mount
+  useEffect(() => {
     fetchRegisteredEvents();
   }, []);
 
   // Handle registering for an event
   const handleRegister = async (eventId) => {
-    const userId = getSession("userId");
-  
-    if (!userId) {
+    const MemberId = getSession("userId");
+
+    if (!MemberId) {
       toast.error("You must be logged in to register for an event.");
       return;
     }
-  
-    if (!eventId) {
-      console.error("Invalid eventId:", eventId);
-      toast.error("Invalid event ID. Please try again.");
-      return;
-    }
-  
+
+    // Prepare the payload
+    const payload = { EventId: eventId, MemberId };
+
     try {
-      console.log("Registering for event:", { eventId, userId }); // Log data for debugging
-  
-      const response = await fetch("https://localhost:7245/api/EventRegisters", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ eventId, userId }),
-      });
-  
-      const responseData = await response.json();
-  
-      if (response.ok) {
-        setRegisteredEvents((prev) => [...prev, eventId]);
-        toast.success(`Successfully registered for event ID: ${eventId}`);
-      } else {
-        console.error("Response error:", responseData);
-        toast.error(responseData.title || "Failed to register for the event.");
+      const response = await fetch(
+        "https://localhost:7245/api/EventRegisters",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Response error data:", errorData);
+        toast.error(errorData.title || "Failed to register for the event.");
+        return;
       }
+
+      setRegisteredEvents((prev) => [...prev, eventId]);
+      toast.success(`Successfully registered for this event`);
+      fetchRegisteredEvents(); // Refresh after successful registration
     } catch (error) {
       console.error("Error registering for event:", error);
       toast.error("Failed to register for the event.");
     }
   };
-  
+
+  // Handle cancelling a registration for an event
+  const handleCancel = async (eventId) => {
+    const MemberId = getSession("userId");
+
+    if (!MemberId) {
+      toast.error("You must be logged in to cancel a registration.");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://localhost:7245/api/EventRegisters/${eventId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Response error data:", errorData);
+        toast.error(
+          errorData.title || "Failed to cancel the event registration."
+        );
+        return;
+      }
+
+      setRegisteredEvents((prev) => prev.filter((id) => id !== eventId));
+      toast.success(`Successfully cancelled registration for this event ID`);
+      fetchRegisteredEvents(); // Refresh after successful cancellation
+    } catch (error) {
+      console.error("Error cancelling registration for event:", error);
+      toast.error("Failed to cancel the event registration.");
+    }
+  };
+
   // Check if the user is already registered for the event
   const isRegistered = (eventId) => registeredEvents.includes(eventId);
 
@@ -108,7 +150,7 @@ const EventsPage = () => {
   );
 
   if (loading) {
-    return <div>Loading events...</div>; // Display loading message
+    return <div>Loading events...</div>;
   }
 
   return (
@@ -161,14 +203,37 @@ const EventsPage = () => {
                 <td className="p-4 border-t-0">
                   <div className="flex space-x-2">
                     {isRegistered(event.id) ? (
-                      <span className="text-green-500">Registered</span>
+                      <>
+                        <div className="flex justify-center items-center space-x-6">
+                          <span className="text-green-500">
+                            <i className="bi bi-check-circle-fill"></i>
+                          </span>
+
+                          <span
+                            onClick={() => handleCancel(event.id)}
+                            className="relative text-red-500 cursor-pointer hover:text-red-600 transition dark:text-red-700 dark:hover:text-red-600 group"
+                            aria-label="Cancel"
+                          >
+                            <i className="bi bi-trash3"></i>
+                            <span className="absolute bottom-full mb-1 hidden group-hover:block bg-gray-800 text-white text-xs rounded py-1 px-2">
+                              Cancel
+                            </span>
+                          </span>
+                        </div>
+                      </>
                     ) : (
-                      <button
-                        onClick={() => handleRegister(event.id)}
-                        className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition dark:bg-blue-700 dark:hover:bg-blue-600"
-                      >
-                        Register
-                      </button>
+                      <div className="flex justify-center items-center h-full">
+                        <span className="relative group">
+                          <i
+                            onClick={() => handleRegister(event.id)}
+                            className="bi bi-person-plus-fill text-blue-500 cursor-pointer hover:text-blue-600 transition dark:text-blue-700 dark:hover:text-blue-600"
+                            aria-label="Register"
+                          ></i>
+                          <span className="absolute bottom-full mb-1 hidden group-hover:block bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
+                            Register
+                          </span>
+                        </span>
+                      </div>
                     )}
                   </div>
                 </td>
