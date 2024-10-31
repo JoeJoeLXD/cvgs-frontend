@@ -110,6 +110,16 @@ const Navbar = () => {
               >
                 Profile
               </NavLink>
+              <NavLink
+                to="/friends-and-family"
+                className={({ isActive }) =>
+                  isActive
+                    ? "text-blue-500 font-bold px-4 py-2 hover:bg-gray-300 dark:hover:bg-gray-700 rounded"
+                    : "text-black dark:text-white px-4 py-2 hover:bg-gray-300 dark:hover:bg-gray-700 rounded"
+                }
+              >
+                Friends & Family
+              </NavLink>
             </>
           )}
         </div>

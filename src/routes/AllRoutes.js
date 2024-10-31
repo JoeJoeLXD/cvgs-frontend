@@ -19,7 +19,8 @@ import {
   Wishlist,
   EventsPage,
   PreferencesPage,
-  SubmitReviewPage, 
+  SubmitReviewPage,
+  FriendsAndFamily, 
 } from "../pages";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { AdminPanel } from "../components";
@@ -92,16 +93,25 @@ export const AllRoutes = ({ setUserEmail }) => {
           </ProtectedRoute>
         }
       />
-      
-      <Route
-  path="submit-review"
-  element={
-    <ProtectedRoute>
-      <SubmitReviewPage />
-    </ProtectedRoute>
-  }
-/>
 
+      <Route
+        path="submit-review"
+        element={
+          <ProtectedRoute>
+            <SubmitReviewPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Friends and Family Route */}
+      <Route
+        path="friends-and-family"
+        element={
+          <ProtectedRoute>
+            <FriendsAndFamily />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Admin Routes */}
       <Route
@@ -125,4 +135,5 @@ export const AllRoutes = ({ setUserEmail }) => {
     </Routes>
   );
 };
+
 
