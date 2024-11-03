@@ -8,7 +8,7 @@ const CartEmpty = () => {
       <div className="my-5">
         <p className="bi bi-cart text-green-600 text-7xl mb-5"></p>
         <p className="mb-2">Oops! Your cart looks empty!</p>
-        <p className="mb-4">Add some products to your cart from our collection.</p>
+        <p className="mb-4">Add some games to your cart from our collection.</p>
       </div>
       <Link
         to="/products"

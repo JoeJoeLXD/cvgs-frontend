@@ -20,7 +20,9 @@ import {
   EventsPage,
   PreferencesPage,
   SubmitReviewPage,
-  FriendsAndFamily, 
+  FriendsAndFamily,
+  ForgotPassword,
+  ResetPassword, // Import ResetPassword
 } from "../pages";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { AdminPanel } from "../components";
@@ -44,6 +46,8 @@ export const AllRoutes = ({ setUserEmail }) => {
       <Route path="products/:id" element={<ProductDetail />} />
       <Route path="login" element={<Login setUserEmail={setUserEmail} />} />
       <Route path="register" element={<Register />} />
+      <Route path="forgot-password" element={<ForgotPassword />} />
+      <Route path="reset-password" element={<ResetPassword />} /> {/* Add ResetPassword route */}
 
       {/* Events Route */}
       <Route path="events" element={<EventsPage />} />
@@ -118,7 +122,7 @@ export const AllRoutes = ({ setUserEmail }) => {
         path="admin/*"
         element={
           <ProtectedRoute isAdmin={true}>
-            <AdminPanel /> {/* AdminPanel includes the AdminPanelNav and the Outlet for nested routes */}
+            <AdminPanel />
           </ProtectedRoute>
         }
       >
@@ -135,5 +139,3 @@ export const AllRoutes = ({ setUserEmail }) => {
     </Routes>
   );
 };
-
-

@@ -1,8 +1,9 @@
 //src/services/productService.js
+// src/services/productService.js
 export async function getProductList(searchTerm) {
-  // Fetch games from the backend API, with search term filtering
+  // Define the API URL with search term filtering
   const url = `https://localhost:7245/api/Games${
-    searchTerm ? `?name_like=${searchTerm}` : ""
+    searchTerm ? `?name=${encodeURIComponent(searchTerm)}` : ""
   }`;
 
   const response = await fetch(url);
@@ -16,6 +17,7 @@ export async function getProductList(searchTerm) {
   const data = await response.json();
   return data["$values"]; // Assuming the backend API response has a `$values` key containing the array of games
 }
+
 
 export async function getProduct(id) {
   // Fetch specific game by ID

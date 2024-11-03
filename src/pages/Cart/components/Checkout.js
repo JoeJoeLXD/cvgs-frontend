@@ -3,16 +3,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useCart, useWishlist } from "../../../context";
-import { createOrder, getUserProfile, saveAddress, getSession } from "../../../services";
+import { useCart } from "../../../context";
+import { createOrder, saveAddress, getSession } from "../../../services";
 import AddressForm from "../../../components/Elements/AddressForm";
+import { getCurrentUserAddress } from "../../../services/dataService";
 
 const Checkout = ({ setCheckout }) => {
   const { cartList, total, clearCart } = useCart();
-  const { wishlist } = useWishlist();
-  const [user, setUser] = useState({});
   const [address, setAddress] = useState({
-    fullName: "",
+    firstName: "",
+    lastName: "",
     country: "",
     phoneNumber: "",
     streetAddress: "",
@@ -44,29 +44,31 @@ const Checkout = ({ setCheckout }) => {
           throw new Error("User is not authenticated");
         }
 
-        const userData = await getUserProfile();
-        console.log("User profile fetched successfully:", userData);
-        setUser(userData);
+        const address = await getCurrentUserAddress();
+        console.log("User address successfully:", address);
 
         // Pre-fill the address form if address is available
-        if (userData.address) {
+        if (address) {
           setAddress({
-            fullName: userData.address.fullName || "",
-            country: userData.address.country || "",
-            phoneNumber: userData.address.phoneNumber || "",
-            streetAddress: userData.address.streetAddress || "",
-            aptSuite: userData.address.aptSuite || "",
-            city: userData.address.city || "",
-            province: userData.address.province || "",
-            postalCode: userData.address.postalCode || "",
-            deliveryInstructions: userData.address.deliveryInstructions || "",
+            firstName: address.fullName.split(" ")[0] || "",
+            lastName: address.fullName.split(" ")[1] || "",
+            country: address.country || "",
+            phoneNumber: address.phoneNumber || "",
+            streetAddress: address.streetAddress || "",
+            aptSuite: address.aptSuite || "",
+            city: address.city || "",
+            province: address.province || "",
+            postalCode: address.postalCode || "",
+            deliveryInstructions: address.deliveryInstructions || "",
           });
           setIsAddressSubmitted(true); // Address is already submitted
           console.log("Address form pre-filled with user data.");
         }
       } catch (error) {
         if (error.message === "User is not authenticated") {
-          toast.error("Please log in to proceed with checkout.", { closeButton: true });
+          toast.error("Please log in to proceed with checkout.", {
+            closeButton: true,
+          });
           navigate("/login");
           console.log("User is not authenticated, redirecting to login.");
         } else {
@@ -82,6 +84,7 @@ const Checkout = ({ setCheckout }) => {
     event.preventDefault();
     console.log("Handling order submission...");
 
+    // Check if the address is complete and submitted
     if (!isAddressSubmitted || !address || Object.keys(address).length === 0) {
       toast.error("Please complete your delivery address before proceeding.", {
         closeButton: true,
@@ -91,6 +94,7 @@ const Checkout = ({ setCheckout }) => {
       return;
     }
 
+    // Check if a payment method is selected
     if (!selectedCard) {
       toast.error("Please select a payment method before proceeding.", {
         closeButton: true,
@@ -101,22 +105,48 @@ const Checkout = ({ setCheckout }) => {
     }
 
     try {
+      // Construct the order data object
+      console.log(cartList);
+      const memberID = sessionStorage.getItem("userId");
       const orderData = {
-        cartList,
-        total,
-        user,
-        address,
-        wishlist,
-        status: "Pending", // Initial order status set to Pending
+        memberId: memberID, // Use the actual user ID
+        orderDate: new Date().toISOString(),
+        totalAmount: total,
+        status: "Pending",
+        orderDetails: cartList.map((item) => ({
+          gameID: item.id,
+          quantity: 1,
+          price: item.price,
+        })),
       };
+
       console.log("Creating order with data:", orderData);
+
+      // Make API call to create the order
       const data = await createOrder(orderData);
+
+      // Success: clear the cart and navigate to order summary page
       console.log("Order created successfully:", data);
       clearCart();
       navigate("/order-summary", { state: { data: data, status: true } });
     } catch (error) {
-      toast.error(error.message, { closeButton: true, position: "bottom-center" });
+      // Enhanced error handling based on error type
+      let errorMessage = "An error occurred while creating your order.";
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        errorMessage = error.response.data.message; // Use API-provided error message
+      }
+
+      toast.error(errorMessage, {
+        closeButton: true,
+        position: "bottom-center",
+      });
       console.error("Error creating order:", error);
+
+      // Navigate to order summary page with failure status
       navigate("/order-summary", { state: { status: false } });
     }
   };
@@ -129,7 +159,10 @@ const Checkout = ({ setCheckout }) => {
       console.log("Address saved successfully:", savedAddress);
       setAddress(savedAddress);
       setIsAddressSubmitted(true);
-      toast.success("Address saved successfully.", { closeButton: true, position: "bottom-center" });
+      toast.success("Address saved successfully.", {
+        closeButton: true,
+        position: "bottom-center",
+      });
     } catch (error) {
       toast.error("Failed to save address. Please ensure you are logged in.", {
         closeButton: true,
@@ -138,7 +171,7 @@ const Checkout = ({ setCheckout }) => {
       console.error("Error saving address:", error);
     }
   };
-  
+
   const handleSelectCard = (event) => {
     console.log("Selected card:", event.target.value);
     setSelectedCard(event.target.value);
@@ -154,7 +187,10 @@ const Checkout = ({ setCheckout }) => {
         aria-modal="true"
         role="dialog"
       >
-        <div ref={modalContentRef} className="relative bg-white rounded-lg shadow-lg dark:bg-gray-700 max-h-screen w-full max-w-2xl p-4 overflow-y-auto">
+        <div
+          ref={modalContentRef}
+          className="relative bg-white rounded-lg shadow-lg dark:bg-gray-700 max-h-screen w-full max-w-2xl p-4 overflow-y-auto"
+        >
           <button
             onClick={() => setCheckout(false)}
             type="button"
@@ -194,7 +230,10 @@ const Checkout = ({ setCheckout }) => {
 
             <form onSubmit={handleOrderSubmit} className="space-y-6">
               <div>
-                <label htmlFor="cardSelect" className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                <label
+                  htmlFor="cardSelect"
+                  className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                >
                   Select Card for Payment:
                 </label>
                 <select
@@ -211,13 +250,15 @@ const Checkout = ({ setCheckout }) => {
               </div>
 
               <p className="mb-4 text-2xl font-semibold text-lime-500 text-center">
-                ${total}
+                ${total.toFixed(2)}
               </p>
 
               <button
                 type="submit"
                 className={`w-full text-white font-medium rounded-lg text-sm px-5 py-2.5 text-center ${
-                  isAddressSubmitted ? "bg-blue-700 hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-700" : "bg-gray-400 cursor-not-allowed"
+                  isAddressSubmitted
+                    ? "bg-blue-700 hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-700"
+                    : "bg-gray-400 cursor-not-allowed"
                 }`}
                 disabled={!isAddressSubmitted}
               >
@@ -232,10 +273,3 @@ const Checkout = ({ setCheckout }) => {
 };
 
 export default Checkout;
-
-
-
-
-
-
-

@@ -12,7 +12,7 @@ const OrderFail = () => {
       <div className="my-5">
         <p>Your order is not confirmed.</p>
         <p>
-          Connect <span className="">codebook@example.com</span> for support.
+          Connect <span className="">gamehub@example.com</span> for support.
         </p>
       </div>
       <Link

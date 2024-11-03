@@ -145,7 +145,7 @@ export async function getUserOrders() {
     }
 
     const data = await response.json();
-    const orders = data.filter((order) => order.user.id === Number(userId));
+    const orders = data["$values"].filter((order) => order.memberID === userId);
     return orders;
   } catch (error) {
     console.error("Error fetching user orders:", error);
@@ -189,6 +189,43 @@ export async function createOrder(orderData) {
   } catch (error) {
     console.error("Error creating order:", error);
     toast.error("Error creating order.");
+    throw error;
+  }
+}
+
+export async function getCurrentUserAddress() {
+  const token = getSession("token");
+  const userId = getSession("userId");
+
+  if (!token || !userId) {
+    toast.error("User is not authenticated");
+    throw new Error("User is not authenticated");
+  }
+
+  const url = `https://localhost:7245/api/Addresses`;
+
+  const requestOptions = {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  try {
+    const response = await fetch(url, requestOptions);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      toast.error(`Error ${response.status}: ${errorText}`);
+      throw new Error(`Error ${response.status}: ${errorText}`);
+    }
+
+    const data = await response.json();
+    const userAddress = data["$values"].find((address) => address.memberID === userId);
+    return userAddress;
+  } catch (error) {
+    console.error("Error fetching user address:", error);
+    toast.error("Error fetching address.");
     throw error;
   }
 }

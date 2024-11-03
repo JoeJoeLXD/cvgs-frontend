@@ -77,28 +77,44 @@ const ProductDetail = () => {
     setInWishlist(Boolean(productInWishlist));
   }, [cartList, wishlist, product.id]);
 
-  const handleWishlistToggle = () => {
-    if (inWishlist) {
-      removeFromWishlist(product.id);
-      toast.success("Removed from wishlist.");
+  const isAuthenticated = !!sessionStorage.getItem("token");
+
+  const handleAction = (actionFn) => {
+    if (!isAuthenticated) {
+      navigate("/login");
     } else {
-      addToWishlist(product);
-      toast.success("Added to wishlist.");
+      actionFn();
     }
   };
 
-  const handleWriteReview = () => {
-    navigate(`/submit-review?gameId=${product.id}`);
+  const handleWishlistToggle = () => {
+    handleAction(() => {
+      if (inWishlist) {
+        removeFromWishlist(product.id);
+        toast.success("Removed from wishlist.");
+      } else {
+        addToWishlist(product);
+        toast.success("Added to wishlist.");
+      }
+    });
   };
 
-  const handleRatingSubmit = (rating) => {
-    setUserRating(rating);
-    const newNumberOfRatings = numberOfRatings + 1;
-    const newAverageRating =
-      (averageRating * numberOfRatings + rating) / newNumberOfRatings;
-    setAverageRating(newAverageRating);
-    setNumberOfRatings(newNumberOfRatings);
-    toast.success(`You rated this game ${rating} stars!`);
+  const handleCartToggle = () => {
+    handleAction(() => {
+      if (inCart) {
+        removeFromCart(product);
+      } else {
+        addToCart(product);
+      }
+    });
+  };
+
+  const handleWriteReview = () => {
+    if (!isAuthenticated) {
+      navigate("/login");
+    } else {
+      navigate(`/submit-review?gameId=${product.id}`);
+    }
   };
 
   // Helper function to randomly select 2 recommended games from the list
@@ -158,7 +174,7 @@ const ProductDetail = () => {
             <p className="my-3 flex flex-col space-y-2">
               {!inCart ? (
                 <button
-                  onClick={() => addToCart(product)}
+                  onClick={handleCartToggle}
                   className={`${buttonClass} bg-blue-700 hover:bg-blue-800 ${
                     product.gamesInStock ? "" : "cursor-not-allowed opacity-50"
                   }`}
@@ -168,7 +184,7 @@ const ProductDetail = () => {
                 </button>
               ) : (
                 <button
-                  onClick={() => removeFromCart(product)}
+                  onClick={handleCartToggle}
                   className={`${buttonClass} bg-red-600 hover:bg-red-800 ${
                     product.gamesInStock ? "" : "cursor-not-allowed opacity-50"
                   }`}
@@ -217,45 +233,52 @@ const ProductDetail = () => {
         <div className="flex items-center justify-center">
           <RatingInput
             currentRating={userRating}
-            onSubmit={handleRatingSubmit}
+            onSubmit={(rating) => {
+              setUserRating(rating);
+              const newNumberOfRatings = numberOfRatings + 1;
+              const newAverageRating =
+                (averageRating * numberOfRatings + rating) / newNumberOfRatings;
+              setAverageRating(newAverageRating);
+              setNumberOfRatings(newNumberOfRatings);
+              toast.success(`You rated this game ${rating} stars!`);
+            }}
           />
           <span className="ml-3 text-lg text-gray-900 dark:text-slate-200">
-            Average Rating: {averageRating.toFixed(1)} ({numberOfRatings}{" "}
-            Ratings)
+            Average Rating: {averageRating.toFixed(1)} ({numberOfRatings} Ratings)
           </span>
         </div>
       </section>
 
       {/* Approved Reviews Section */}
-<section className="my-10">
-  <h2 className="text-2xl font-semibold text-gray-900 dark:text-slate-200 mb-5 text-center">
-    Reviews
-  </h2>
-  {approvedReviews.length > 0 ? (
-    <div className="max-h-80 overflow-y-auto space-y-4 px-4">
-      {approvedReviews.map((review) => (
-        <div
-          key={review.reviewID}
-          className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg"
-        >
-          <p className="text-lg text-gray-900 dark:text-slate-200">
-            Member:{" "}
-            {review.userProfile && review.userProfile.displayName
-              ? review.userProfile.displayName
-              : review.user || "Anonymous User"}
+      <section className="my-10">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-slate-200 mb-5 text-center">
+          Reviews
+        </h2>
+        {approvedReviews.length > 0 ? (
+          <div className="max-h-80 overflow-y-auto space-y-4 px-4">
+            {approvedReviews.map((review) => (
+              <div
+                key={review.reviewID}
+                className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg"
+              >
+                <p className="text-lg text-gray-900 dark:text-slate-200">
+                  Member: {" "}
+                  {review.userProfile && review.userProfile.displayName
+                    ? review.userProfile.displayName
+                    : review.user || "Anonymous User"}
+                </p>
+                <p className="text-lg text-gray-700 dark:text-slate-400 whitespace-pre-wrap break-words">
+                  {review.reviewText}
+                </p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-center text-gray-500 dark:text-slate-400">
+            No approved reviews available.
           </p>
-          <p className="text-lg text-gray-700 dark:text-slate-400 whitespace-pre-wrap break-words">
-            {review.reviewText}
-          </p>
-        </div>
-      ))}
-    </div>
-  ) : (
-    <p className="text-center text-gray-500 dark:text-slate-400">
-      No approved reviews available.
-    </p>
-  )}
-</section>
+        )}
+      </section>
 
       {/* Game Recommendations Section */}
       <section className="mt-10 text-center">
@@ -316,3 +339,4 @@ const ProductDetail = () => {
 };
 
 export default ProductDetail;
+

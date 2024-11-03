@@ -9,7 +9,10 @@ const Search = ({ setSearchSection }) => {
   const handleSearch = (event) => {
     event.preventDefault();
     setSearchSection(false);
-    navigate(`/products?q=${searchRef.current.value}`);
+    const searchQuery = searchRef.current.value.trim();
+    if (searchQuery) {
+      navigate(`/products?q=${searchQuery}`);
+    }
   };
 
   return (
@@ -23,9 +26,8 @@ const Search = ({ setSearchSection }) => {
             type="text"
             id="simple-search"
             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            placeholder="Search"
+            placeholder="Search for games"
             autoComplete="off"
-            required=""
           />
         </div>
         <button
@@ -38,3 +40,4 @@ const Search = ({ setSearchSection }) => {
 };
 
 export default Search;
+

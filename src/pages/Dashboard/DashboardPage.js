@@ -14,6 +14,7 @@ const DashboardPage = () => {
     async function fetchOrders() {
       try {
         const data = await getUserOrders();
+        console.log(data);
         setOrders(data);
       } catch (error) {
         toast.error(error.message, {
@@ -29,13 +30,15 @@ const DashboardPage = () => {
     <main>
       <section>
         <p className="text-2xl text-center font-semibold dark:text-slate-100 my-10 underline underline-offset-8">
-          My Dashboard
+          My Orders
         </p>
       </section>
 
       <section>
         {orders.length > 0 ? (
-          orders.map((order) => <DashboardCard key={order.id} order={order} />)
+          orders.map((order, i) => (
+            <DashboardCard key={order.orderID} order={order} num={i} />
+          ))
         ) : (
           <DashboardEmpty />
         )}

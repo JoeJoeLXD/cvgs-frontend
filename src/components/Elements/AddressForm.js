@@ -3,21 +3,22 @@ import React from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
-const AddressForm = ({ onSubmit }) => {
+const AddressForm = ({ address, onSubmit }) => {
   const formik = useFormik({
     initialValues: {
-      country: "",
-      firstName: "",
-      lastName: "",
-      phoneNumber: "",
-      streetAddress: "",
-      aptSuite: "",
-      city: "",
-      province: "",
-      postalCode: "",
-      deliveryInstructions: "",
+      firstName: address.firstName || "",
+      lastName: address.lastName || "",
+      country: address.country || "",
+      phoneNumber: address.phoneNumber || "",
+      streetAddress: address.streetAddress || "",
+      aptSuite: address.aptSuite || "",
+      city: address.city || "",
+      province: address.province || "",
+      postalCode: address.postalCode || "",
+      deliveryInstructions: address.deliveryInstructions || "",
       sameAsMailing: false,
     },
+    enableReinitialize: true,
     validationSchema: Yup.object({
       country: Yup.string().required("Country is required"),
       firstName: Yup.string().required("First name is required"),
@@ -77,7 +78,9 @@ const AddressForm = ({ onSubmit }) => {
             className="w-full mt-1 p-2 border rounded"
           />
           {formik.touched.firstName && formik.errors.firstName ? (
-            <div className="text-red-500 text-sm">{formik.errors.firstName}</div>
+            <div className="text-red-500 text-sm">
+              {formik.errors.firstName}
+            </div>
           ) : null}
         </div>
         <div>
@@ -108,7 +111,9 @@ const AddressForm = ({ onSubmit }) => {
           className="w-full mt-1 p-2 border rounded"
         />
         {formik.touched.phoneNumber && formik.errors.phoneNumber ? (
-          <div className="text-red-500 text-sm">{formik.errors.phoneNumber}</div>
+          <div className="text-red-500 text-sm">
+            {formik.errors.phoneNumber}
+          </div>
         ) : null}
       </div>
 
@@ -124,7 +129,9 @@ const AddressForm = ({ onSubmit }) => {
           className="w-full mt-1 p-2 border rounded"
         />
         {formik.touched.streetAddress && formik.errors.streetAddress ? (
-          <div className="text-red-500 text-sm">{formik.errors.streetAddress}</div>
+          <div className="text-red-500 text-sm">
+            {formik.errors.streetAddress}
+          </div>
         ) : null}
       </div>
       <div>
