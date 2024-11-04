@@ -3,21 +3,36 @@
 import React, { useRef } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import { forgotPassword } from "../services/authService";
 
 const ForgotPassword = () => {
   const emailRef = useRef();
 
-  const handleForgotPassword = (e) => {
+  const handleForgotPassword = async (e) => {
     e.preventDefault();
-    
-    // Add logic here to handle password reset
     const email = emailRef.current.value;
     if (email) {
-      // Here, call the API to send a password reset email
-      toast.success("Password reset email sent!", {
-        closeButton: true,
-        position: "bottom-center",
-      });
+      try {
+        const response = await forgotPassword({ email });
+        if (response.ok) {
+          toast.success("Password reset email sent! Please check your email for the reset link.", {
+            closeButton: true,
+            position: "bottom-center",
+          });
+        } else {
+          const errorData = await response.text();
+          toast.error(`Error: ${errorData || "Error sending password reset email. Please try again."}`, {
+            closeButton: true,
+            position: "bottom-center",
+          });
+        }
+      } catch (error) {
+        const errorMessage = error.response?.data?.message || error.message || "Failed to send password reset email. Please try again.";
+        toast.error(errorMessage, {
+          closeButton: true,
+          position: "bottom-center",
+        });
+      }
     } else {
       toast.error("Please enter a valid email address", {
         closeButton: true,

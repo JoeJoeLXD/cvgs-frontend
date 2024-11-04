@@ -1,15 +1,19 @@
-// src/pages/ResetPassword.js
+// src/pages/ResetPassword.js 
 
 import React, { useRef } from "react";
 import { toast } from "react-toastify";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { resetPassword } from "../services/authService";
 
 const ResetPassword = () => {
   const passwordRef = useRef();
   const confirmPasswordRef = useRef();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const email = searchParams.get("email");
+  const resetCode = searchParams.get("code");
 
-  const handleResetPassword = (e) => {
+  const handleResetPassword = async (e) => {
     e.preventDefault();
     const password = passwordRef.current.value;
     const confirmPassword = confirmPasswordRef.current.value;
@@ -24,14 +28,28 @@ const ResetPassword = () => {
       return;
     }
 
-    // Add your password reset logic here
-    toast.success("Password has been reset successfully!", {
-      closeButton: true,
-      position: "bottom-center",
-    });
-    
-    // Redirect to the login page after success
-    navigate("/login");
+    try {
+      const response = await resetPassword({ email, resetCode, newPassword: password });
+      if (response.ok) {
+        toast.success("Password has been reset successfully!", {
+          closeButton: true,
+          position: "bottom-center",
+        });
+        navigate("/login");
+      } else {
+        const errorData = await response.text();
+        toast.error(`Error: ${errorData || "Failed to reset password. Please try again."}`, {
+          closeButton: true,
+          position: "bottom-center",
+        });
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || error.message || "Failed to reset password. Please try again.";
+      toast.error(errorMessage, {
+        closeButton: true,
+        position: "bottom-center",
+      });
+    }
   };
 
   return (
@@ -92,3 +110,10 @@ const ResetPassword = () => {
 };
 
 export default ResetPassword;
+
+
+
+
+
+
+

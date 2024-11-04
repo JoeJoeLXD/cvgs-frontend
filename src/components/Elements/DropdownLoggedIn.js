@@ -56,7 +56,7 @@ const DropdownLoggedIn = ({ setDropdown }) => {
                 to="/products"
                 className="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
               >
-                All Games
+                Games
               </Link>
             </li>
             <li>
@@ -65,7 +65,7 @@ const DropdownLoggedIn = ({ setDropdown }) => {
                 to="/dashboard"
                 className="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
               >
-                Dashboard
+                Orders
               </Link>
             </li>
             <li>
@@ -74,7 +74,7 @@ const DropdownLoggedIn = ({ setDropdown }) => {
                 onClick={handleEditProfileClick}
                 className="block cursor-pointer py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
               >
-                Edit Profile
+                Profile
               </span>
             </li>
           </>

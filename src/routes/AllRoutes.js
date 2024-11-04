@@ -47,7 +47,7 @@ export const AllRoutes = ({ setUserEmail }) => {
       <Route path="login" element={<Login setUserEmail={setUserEmail} />} />
       <Route path="register" element={<Register />} />
       <Route path="forgot-password" element={<ForgotPassword />} />
-      <Route path="reset-password" element={<ResetPassword />} /> {/* Add ResetPassword route */}
+      <Route path="reset-password" element={<ResetPassword />} /> 
 
       {/* Events Route */}
       <Route path="events" element={<EventsPage />} />

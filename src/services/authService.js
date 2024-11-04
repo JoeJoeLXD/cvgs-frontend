@@ -1,6 +1,6 @@
 // src/services/authService.js 
 
-import { jwtDecode } from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode'; // Corrected import to use named import
 import { getUserProfile } from './dataService'; // Import the function to fetch user profile
 
 // Define ClaimTypes if not already imported
@@ -9,14 +9,26 @@ const ClaimTypes = {
   Role: "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
 };
 
-// Simulated function to reset user password
-export async function resetPassword(email) {
+// Function to send a password reset link
+export async function forgotPassword({ email }) {
   const response = await fetch('https://localhost:7245/api/Auth/forgot-password', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ email }),
+  });
+  return response;
+}
+
+// Function to reset user password
+export async function resetPassword({ email, resetCode, newPassword }) {
+  const response = await fetch('https://localhost:7245/api/Auth/reset-password', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email, resetCode, newPassword }),
   });
   return response;
 }
@@ -28,12 +40,12 @@ export async function login(authDetail) {
   const requestOptions = {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }), // Send email and password
+    body: JSON.stringify({ email, password }),
   };
 
   try {
     const response = await fetch(
-      "https://localhost:7245/api/Auth/login", // Ensure API endpoint is correct
+      "https://localhost:7245/api/Auth/login",
       requestOptions
     );
 
@@ -50,16 +62,16 @@ export async function login(authDetail) {
     const token = responseData.token;
 
     // Decode the JWT token
-    const decodedToken = jwtDecode(token);
+    const decodedToken = jwtDecode(token); // Correct usage of jwtDecode
 
     // Prepare the user data
     const userData = {
-      accessToken: token, // Store the JWT token
+      accessToken: token,
       user: {
-        id: decodedToken[ClaimTypes.NameIdentifier], // Get user ID from the decoded token
-        email: decodedToken.sub, // Get email from the decoded token
-        role: decodedToken[ClaimTypes.Role] || "member", // Get role from the decoded token
-        displayName: decodedToken.DisplayName || "No name", // Get display name from the decoded token
+        id: decodedToken[ClaimTypes.NameIdentifier],
+        email: decodedToken.sub,
+        role: decodedToken[ClaimTypes.Role] || "member",
+        displayName: decodedToken.DisplayName || "No name",
       },
     };
 
@@ -75,18 +87,18 @@ export async function login(authDetail) {
     const userRole = sessionStorage.getItem("role");
     if (userRole && userRole.toLowerCase() !== "admin") {
       // Fetch the latest profile data after login to ensure session storage has updated data
-    const updatedProfile = await getUserProfile();
-      sessionStorage.setItem("displayName", updatedProfile.displayName); // Update display name
-      sessionStorage.setItem("email", updatedProfile.email); // Update email if necessary
-      sessionStorage.setItem("role", updatedProfile.role); // Update role
+      const updatedProfile = await getUserProfile();
+      sessionStorage.setItem("displayName", updatedProfile.displayName);
+      sessionStorage.setItem("email", updatedProfile.email);
+      sessionStorage.setItem("role", updatedProfile.role);
     }
 
     // Trigger custom event to signal login
     window.dispatchEvent(new Event("storage"));
 
-    return userData; // Return user data
+    return userData;
   } catch (error) {
-    throw error; // Propagate the error
+    throw error;
   }
 }
 
@@ -112,9 +124,9 @@ export async function register(authDetail) {
     }
 
     const responseData = await response.json();
-    return responseData; // Return response data
+    return responseData;
   } catch (error) {
-    throw error; // Propagate the error
+    throw error;
   }
 }
 
@@ -122,9 +134,9 @@ export async function register(authDetail) {
 export function logout() {
   sessionStorage.removeItem("token");
   sessionStorage.removeItem("userId");
-  sessionStorage.removeItem("email"); // Clear user email from session
-  sessionStorage.removeItem("role"); // Clear user role from session
-  sessionStorage.removeItem("displayName"); // Clear display name from session
+  sessionStorage.removeItem("email");
+  sessionStorage.removeItem("role");
+  sessionStorage.removeItem("displayName");
 
   // Trigger custom event to signal logout
   window.dispatchEvent(new Event("storage"));
@@ -132,5 +144,7 @@ export function logout() {
 
 // Utility function to get items from session storage
 export function getSession(key) {
-  return sessionStorage.getItem(key); // Retrieve item as string
+  return sessionStorage.getItem(key);
 }
+
+
