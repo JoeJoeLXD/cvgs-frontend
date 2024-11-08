@@ -1,5 +1,5 @@
 // src/context/WishlistContext.js
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { toast } from "react-toastify";
 
 const WishlistContext = createContext();
@@ -68,14 +68,10 @@ export const WishlistProvider = ({ children }) => {
       console.log("Filtered wishlist data:", filteredWishlist); // Log filtered data for debugging
       setWishlist(filteredWishlist);
     } catch (error) {
+      console.error("Error fetching wishlist:", error.message); // Log error for debugging
       toast.error("Error fetching wishlist: " + error.message);
     }
   };
-
-  // Initial fetch on component mount
-  useEffect(() => {
-    fetchWishlist();
-  }, []);
 
   // Function to remove a product from the wishlist via the backend API
   const removeFromWishlist = async (id) => {
