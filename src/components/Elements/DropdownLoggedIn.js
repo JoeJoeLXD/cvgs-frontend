@@ -2,13 +2,13 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getSession, logout } from "../../services/authService"; 
+import { getSession, logout } from "../../services/authService";
 
 const DropdownLoggedIn = ({ setDropdown }) => {
   const navigate = useNavigate();
   const [user, setUser] = useState({
     email: "",
-    role: "member", 
+    role: "member",
     displayName: "",
   });
 
@@ -26,7 +26,7 @@ const DropdownLoggedIn = ({ setDropdown }) => {
     if (email && role) {
       setUser({ email, role, displayName });
     } else {
-      handleLogout(); 
+      handleLogout();
     }
   }, [handleLogout]);
 
@@ -93,4 +93,3 @@ const DropdownLoggedIn = ({ setDropdown }) => {
 };
 
 export default DropdownLoggedIn;
-

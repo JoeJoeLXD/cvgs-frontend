@@ -7,6 +7,7 @@ const AdminEvents = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false); // Modal visibility
   const [editingEvent, setEditingEvent] = useState(null); // For editing event
+  const [deleteEvent, setDeleteEvent] = useState(null); // Event to delete
 
   // Default state for a new event or editing
   const defaultEventState = {
@@ -14,6 +15,7 @@ const AdminEvents = () => {
     eventDate: "",
     eventTime: "",
     eventDescription: "",
+    updateTime: null,
   };
 
   const [newEvent, setNewEvent] = useState(defaultEventState); // Add/Edit form state
@@ -24,7 +26,18 @@ const AdminEvents = () => {
       try {
         const response = await fetch("https://localhost:7245/api/Events");
         const data = await response.json();
-        setEvents(data["$values"]);
+
+        // Sort events by date, then time, then event name
+        const sortedEvents = data["$values"].sort((a, b) => {
+          const dateA = new Date(a.eventDateTime);
+          const dateB = new Date(b.eventDateTime);
+          if (dateA < dateB) return -1;
+          if (dateA > dateB) return 1;
+          // If dates are the same, sort by event name
+          return a.eventName.localeCompare(b.eventName);
+        });
+
+        setEvents(sortedEvents);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching events:", error);
@@ -53,6 +66,7 @@ const AdminEvents = () => {
         body: JSON.stringify({
           ...newEvent,
           eventDateTime: `${newEvent.eventDate}T${newEvent.eventTime}`,
+          updateTime: new Date().toISOString(), // Set UpdateTime to current time
         }),
       });
 
@@ -89,22 +103,33 @@ const AdminEvents = () => {
 
   // Open modal for editing an event
   const openEditModal = (event) => {
+    const [date, time] = event.eventDateTime.split("T");
     setNewEvent({
       ...event,
-      eventDate: event.eventDateTime.split("T")[0],
-      eventTime: event.eventDateTime.split("T")[1],
+      eventDate: date,
+      eventTime: time.slice(0, 5), // Ensures time format is "HH:MM"
     }); // Set the form with selected event data
     setEditingEvent(event);
     setShowModal(true); // Show modal
   };
 
+  // Open delete modal
+  const openDeleteModal = (event) => {
+    setDeleteEvent(event);
+  };
+
+  // Close delete modal
+  const closeDeleteModal = () => {
+    setDeleteEvent(null);
+  };
+
   // Delete Event
-  const handleDeleteEvent = async (eventId) => {
-    if (!window.confirm("Are you sure you want to delete this event?")) return;
+  const handleDeleteEvent = async () => {
+    if (!deleteEvent) return;
 
     try {
       const response = await fetch(
-        `https://localhost:7245/api/Events/${eventId}`,
+        `https://localhost:7245/api/Events/${deleteEvent.id}`,
         {
           method: "DELETE",
         }
@@ -113,9 +138,10 @@ const AdminEvents = () => {
       if (!response.ok) throw new Error("Failed to delete event.");
 
       setEvents((prevEvents) =>
-        prevEvents.filter((event) => event.id !== eventId)
+        prevEvents.filter((event) => event.id !== deleteEvent.id)
       );
       toast.success("Event deleted successfully!");
+      closeDeleteModal();
     } catch (error) {
       console.error("Error deleting event:", error);
       toast.error("Failed to delete event. Please try again.");
@@ -197,8 +223,8 @@ const AdminEvents = () => {
                       <i className="bi bi-pencil"></i>
                     </button>
                     <button
-                      className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 transition dark:bg-gray-400 dark:hover:bg-gary-600"
-                      onClick={() => handleDeleteEvent(event.id)}
+                      className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 transition dark:bg-gray-400 dark:hover:bg-gray-600"
+                      onClick={() => openDeleteModal(event)}
                     >
                       <i className="bi bi-trash"></i>
                     </button>
@@ -210,6 +236,37 @@ const AdminEvents = () => {
         </table>
       ) : (
         <p>No upcoming events available.</p>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteEvent && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-sm">
+            <h2 className="text-xl font-semibold mb-6 dark:text-white">
+              Confirm Deletion
+            </h2>
+            <p className="mb-6 dark:text-gray-200">
+              Are you sure you want to delete the event:{" "}
+              <strong>{deleteEvent.eventName}</strong>?
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                type="button"
+                className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition dark:bg-gray-600 dark:hover:bg-gray-500"
+                onClick={closeDeleteModal}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition dark:bg-red-700 dark:hover:bg-red-600"
+                onClick={handleDeleteEvent}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Modal Form for Add/Edit Event */}

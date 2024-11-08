@@ -5,6 +5,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import useTitle from "../hooks/useTitle";
 import { login, resetPassword } from "../services";
+import { useCart, useWishlist } from "../context";
 
 const Login = ({ setUserEmail }) => {
   useTitle("Login");
@@ -13,6 +14,8 @@ const Login = ({ setUserEmail }) => {
   const passwordRef = useRef();
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
+  const { refreshCart } = useCart(); // Import the useCart hook
+  const { fetchWishlist } = useWishlist();
 
   // State to track login attempts
   const [loginAttempts, setLoginAttempts] = useState(0);
@@ -41,6 +44,9 @@ const Login = ({ setUserEmail }) => {
         sessionStorage.setItem("userId", data.user.id);
         setUserEmail(data.user.email);
 
+        refreshCart(); // Refresh the cart after login
+        fetchWishlist();
+
         setTimeout(() => {
           navigate("/");
         }, 300);
@@ -53,7 +59,10 @@ const Login = ({ setUserEmail }) => {
       }
     } catch (error) {
       setLoginAttempts((prev) => prev + 1);
-      const errorMessage = error.response?.data?.message || error.message || "An error occurred during login. Please try again.";
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "An error occurred during login. Please try again.";
       toast.error(errorMessage, {
         closeButton: true,
         position: "bottom-center",
@@ -72,13 +81,21 @@ const Login = ({ setUserEmail }) => {
         setIsResettingPassword(false);
       } else {
         const errorData = await response.text();
-        toast.error(`Error: ${errorData || "Error sending password reset email. Please try again."}`, {
-          closeButton: true,
-          position: "bottom-center",
-        });
+        toast.error(
+          `Error: ${
+            errorData || "Error sending password reset email. Please try again."
+          }`,
+          {
+            closeButton: true,
+            position: "bottom-center",
+          }
+        );
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || "Failed to send password reset email. Please try again.";
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to send password reset email. Please try again.";
       toast.error(errorMessage, {
         closeButton: true,
         position: "bottom-center",
@@ -143,7 +160,10 @@ const Login = ({ setUserEmail }) => {
             )}
           </form>
           <div className="mt-4">
-            <Link to="/forgot-password" className="text-blue-600 hover:underline">
+            <Link
+              to="/forgot-password"
+              className="text-blue-600 hover:underline"
+            >
               Forgot your password?
             </Link>
           </div>
@@ -188,4 +208,3 @@ const Login = ({ setUserEmail }) => {
 };
 
 export default Login;
-

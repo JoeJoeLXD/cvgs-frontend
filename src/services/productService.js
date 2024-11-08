@@ -1,5 +1,5 @@
 //src/services/productService.js
-// src/services/productService.js
+
 export async function getProductList(searchTerm) {
   // Define the API URL with search term filtering
   const url = `https://localhost:7245/api/Games${

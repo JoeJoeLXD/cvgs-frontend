@@ -19,9 +19,13 @@ const ProductDetail = () => {
   const [averageRating, setAverageRating] = useState(0);
   const [numberOfRatings, setNumberOfRatings] = useState(0);
   const [approvedReviews, setApprovedReviews] = useState([]);
+  const [hasReviewed, setHasReviewed] = useState(false); 
   const { id } = useParams();
   const navigate = useNavigate();
   useTitle(product.gameName || "Product Detail");
+
+  const isAuthenticated = !!sessionStorage.getItem("token");
+  const userId = sessionStorage.getItem("userId"); // Assuming you save userId in session
 
   // List of random fallback images
   const imagesList = [
@@ -30,6 +34,67 @@ const ProductDetail = () => {
     "/assets/images/10003.avif",
     "/assets/images/10004.avif",
     "/assets/images/10005.avif",
+    "/assets/images/Action_1.avif",
+    "/assets/images/Action_2.avif",
+    "/assets/images/Action_3.avif",
+    "/assets/images/Action_4.avif",
+    "/assets/images/Action_5.avif",
+    "/assets/images/Action_6.avif",
+    "/assets/images/Adventure_1.avif",
+    "/assets/images/Adventure_2.avif",
+    "/assets/images/Adventure_3.avif",
+    "/assets/images/Adventure_4.avif",
+    "/assets/images/Adventure_5.avif",
+    "/assets/images/Adventure_6.avif",
+    "/assets/images/Fighting_1.avif",
+    "/assets/images/Fighting_2.avif",
+    "/assets/images/Fighting_3.avif",
+    "/assets/images/Fighting_4.avif",
+    "/assets/images/Fighting_5.avif",
+    "/assets/images/Fighting_6.avif",
+    "/assets/images/Horror_1.avif",
+    "/assets/images/Horror_2.avif",
+    "/assets/images/Horror_3.avif",
+    "/assets/images/Horror_4.avif",
+    "/assets/images/Horror_5.avif",
+    "/assets/images/Horror_6.avif",
+    "/assets/images/Horror_5.avif",
+    "/assets/images/Puzzle_1.avif",
+    "/assets/images/Puzzle_2.avif",
+    "/assets/images/Puzzle_3.avif",
+    "/assets/images/Puzzle_4.avif",
+    "/assets/images/Puzzle_5.avif",
+    "/assets/images/Puzzle_6.avif",
+    "/assets/images/Racing_1.avif",
+    "/assets/images/Racing_2.avif",
+    "/assets/images/Racing_3.avif",
+    "/assets/images/Racing_4.avif",
+    "/assets/images/Racing_5.avif",
+    "/assets/images/Racing_6.avif",
+    "/assets/images/RPG_1.avif",
+    "/assets/images/RPG_2.avif",
+    "/assets/images/RPG_3.avif",
+    "/assets/images/RPG_4.avif",
+    "/assets/images/RPG_5.avif",
+    "/assets/images/RPG_6.avif",
+    "/assets/images/Simulation_1.avif",
+    "/assets/images/Simulation_2.avif",
+    "/assets/images/Simulation_3.avif",
+    "/assets/images/Simulation_4.avif",
+    "/assets/images/Simulation_5.avif",
+    "/assets/images/Simulation_6.avif",
+    "/assets/images/Sports_1.avif",
+    "/assets/images/Sports_2.avif",
+    "/assets/images/Sports_3.avif",
+    "/assets/images/Sports_4.avif",
+    "/assets/images/Sports_5.avif",
+    "/assets/images/Sports_6.avif",
+    "/assets/images/Strategy_1.avif",
+    "/assets/images/Strategy_2.avif",
+    "/assets/images/Strategy_3.avif",
+    "/assets/images/Strategy_4.avif",
+    "/assets/images/Strategy_5.avif",
+    "/assets/images/Strategy_6.avif",
   ];
 
   useEffect(() => {
@@ -41,21 +106,32 @@ const ProductDetail = () => {
         setAverageRating(data.rate || 0);
         setNumberOfRatings(data.gameReviews?.$values.length || 0);
         setUserRating(data.userRating || 0);
-
+  
+        // Set user's rating if it exists
+        const userRatingData = data.gameReviews?.$values.find(
+          (review) => review.memberID === userId
+        );
+        if (userRatingData) {
+          setUserRating(userRatingData.rating);
+          setHasReviewed(true); // Use setHasReviewed here
+        } else {
+          setHasReviewed(false); // In case there's no review from the user
+        }
+  
         // Filter approved reviews
         const approved = data.gameReviews?.$values.filter(
           (review) => review.approved === true
         );
-
+  
         const reviewsWithUsers = await Promise.all(
           approved.map(async (review) => {
             const userName = await getUserNameById(review.memberID);
             return { ...review, user: userName };
           })
         );
-
+  
         setApprovedReviews(reviewsWithUsers || []);
-
+  
         const allProducts = await getProductList();
         const recommended = allProducts.filter((prod) => prod.id !== id);
         setRecommendedProducts(getRandomRecommendedGames(recommended));
@@ -67,17 +143,15 @@ const ProductDetail = () => {
       }
     }
     fetchProducts();
-  }, [id]);
-
+  }, [id, userId]);
+  
   useEffect(() => {
     const productInCart = cartList.find((item) => item.id === product.id);
     setInCart(Boolean(productInCart));
 
-    const productInWishlist = wishlist.find((item) => item.id === product.id);
+    const productInWishlist = wishlist.find((item) => item.gameID === product.id);
     setInWishlist(Boolean(productInWishlist));
   }, [cartList, wishlist, product.id]);
-
-  const isAuthenticated = !!sessionStorage.getItem("token");
 
   const handleAction = (actionFn) => {
     if (!isAuthenticated) {
@@ -90,11 +164,20 @@ const ProductDetail = () => {
   const handleWishlistToggle = () => {
     handleAction(() => {
       if (inWishlist) {
-        removeFromWishlist(product.id);
-        toast.success("Removed from wishlist.");
+        // Find the item in wishlist to remove it using wishListID
+        let wishListItem = wishlist.find((item) => item.gameID === product.id);
+        if (wishListItem) {
+          removeFromWishlist(wishListItem.wishListID);
+          //toast.success("Removed from wishlist.");
+          setInWishlist(false);
+        }
       } else {
-        addToWishlist(product);
-        toast.success("Added to wishlist.");
+        // Prevent adding if already in wishlist
+        if (!inWishlist) {
+          addToWishlist(product);
+          //toast.success("Added to wishlist.");
+          setInWishlist(true);
+        }
       }
     });
   };
@@ -135,12 +218,21 @@ const ProductDetail = () => {
   const buttonClass =
     "inline-flex items-center justify-center w-64 py-2 text-sm font-medium text-center text-white rounded-lg";
 
+  // Determine the category name to display
+  const categoryName = product.gameCategory?.name || "Uncategorized";
+
   return (
     <main className="mx-4 lg:mx-20">
       <section>
         <h1 className="mt-10 mb-5 text-4xl text-center font-bold text-gray-900 dark:text-slate-200">
           {product.gameName}
         </h1>
+
+        {/* Display the category name below the product name */}
+        <p className="text-lg text-center font-bold text-gray-900 dark:text-slate-200 mb-5">
+          Category: {categoryName}
+        </p>
+
         <p className="mb-5 text-lg text-center text-gray-900 dark:text-slate-200">
           {product.overview}
         </p>
@@ -211,10 +303,13 @@ const ProductDetail = () => {
               )}
             </p>
 
-            {/* Write a Review Button */}
-            <button
+             {/* Write a Review Button */}
+             <button
               onClick={handleWriteReview}
-              className={`${buttonClass} bg-purple-600 hover:bg-purple-700 mt-4`}
+              className={`${buttonClass} bg-purple-600 hover:bg-purple-700 mt-4 ${
+                hasReviewed ? "cursor-not-allowed opacity-50" : ""
+              }`}
+              disabled={hasReviewed}
             >
               Write a Review <i className="ml-1 bi bi-pencil"></i>
             </button>
@@ -234,6 +329,10 @@ const ProductDetail = () => {
           <RatingInput
             currentRating={userRating}
             onSubmit={(rating) => {
+              if (userRating > 0) {
+                toast.error("You have already rated this game.");
+                return;
+              }
               setUserRating(rating);
               const newNumberOfRatings = numberOfRatings + 1;
               const newAverageRating =
@@ -241,7 +340,9 @@ const ProductDetail = () => {
               setAverageRating(newAverageRating);
               setNumberOfRatings(newNumberOfRatings);
               toast.success(`You rated this game ${rating} stars!`);
+              // Additional logic to save rating to backend can be added here
             }}
+            disabled={userRating > 0} // Disable rating input if user has already rated
           />
           <span className="ml-3 text-lg text-gray-900 dark:text-slate-200">
             Average Rating: {averageRating.toFixed(1)} ({numberOfRatings} Ratings)

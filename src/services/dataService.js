@@ -34,7 +34,7 @@ export async function updateUser(userId, updatedProfile) {
     }
 
     const data = await response.json();
-    toast.success("Profile updated successfully!");
+    //toast.success("Profile updated successfully!");
     return data;
   } catch (error) {
     console.error("Error updating user profile:", error);
@@ -266,7 +266,7 @@ export async function saveAddress(addressData) {
     }
 
     const data = await response.json();
-    toast.success("Address saved successfully!");
+    //toast.success("Address saved successfully!");
     return data;
   } catch (error) {
     console.error("Error saving address:", error);

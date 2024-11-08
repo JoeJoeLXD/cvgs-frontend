@@ -16,7 +16,21 @@ const EventsPage = () => {
         const response = await fetch("https://localhost:7245/api/Events");
         if (!response.ok) throw new Error("Failed to fetch events");
         const data = await response.json();
-        setEvents(data["$values"]);
+
+        // Sort events by date, time, then event name
+        const sortedEvents = data["$values"].sort((a, b) => {
+          const dateA = new Date(a.eventDateTime);
+          const dateB = new Date(b.eventDateTime);
+
+          // Compare dates
+          if (dateA < dateB) return -1;
+          if (dateA > dateB) return 1;
+
+          // If dates are the same, compare event names
+          return a.eventName.localeCompare(b.eventName);
+        });
+
+        setEvents(sortedEvents);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching events:", error);
@@ -47,10 +61,12 @@ const EventsPage = () => {
 
       const data = await response.json();
       console.log("Registered events raw response data:", data); // Log data to verify structure
-
+      const filteredData = data["$values"].filter(
+        (reg) => reg.memberId === MemberId
+      );
       // Check if `$values` exists and is an array
-      if (data && data["$values"] && Array.isArray(data["$values"])) {
-        setRegisteredEvents(data["$values"].map((reg) => reg.eventId)); // Store registered event IDs
+      if (filteredData && Array.isArray(filteredData)) {
+        setRegisteredEvents(filteredData.map((reg) => reg.eventId)); // Store registered event IDs
       } else {
         console.error("Unexpected data format:", data);
         toast.error("Unexpected data format for registered events.");
@@ -133,7 +149,7 @@ const EventsPage = () => {
       }
 
       setRegisteredEvents((prev) => prev.filter((id) => id !== eventId));
-      toast.success(`Successfully cancelled registration for this event ID`);
+      toast.success(`Successfully cancelled registration for this event`);
       fetchRegisteredEvents(); // Refresh after successful cancellation
     } catch (error) {
       console.error("Error cancelling registration for event:", error);

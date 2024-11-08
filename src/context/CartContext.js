@@ -1,37 +1,79 @@
 //src/context/CartContext.js
-import React, { createContext, useContext, useReducer, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  useEffect,
+  useState,
+} from "react";
 import { cartReducer } from "../reducers";
 
-// Get cart from localStorage or initialize with an empty cart
-const cartInitialState = {
-  cartList: JSON.parse(localStorage.getItem("cartList")) || [],
-  total: JSON.parse(localStorage.getItem("total")) || 0,
-};
+// Function to get cart data from localStorage for a specific member
+function getCartData(memberID) {
+  return {
+    cartList: JSON.parse(localStorage.getItem(`${memberID}_cartList`)) || [],
+    total: JSON.parse(localStorage.getItem(`${memberID}_total`)) || 0,
+  };
+}
 
-const CartContext = createContext(cartInitialState);
+const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-  const [state, dispatch] = useReducer(cartReducer, cartInitialState);
+  const [memberID, setMemberID] = useState(sessionStorage.getItem("userId"));
+
+  // Initial cart state based on memberID
+  const [state, dispatch] = useReducer(
+    cartReducer,
+    memberID ? getCartData(memberID) : { cartList: [], total: 0 }
+  );
+
+  // Function to re-retrieve memberID and re-initialize the cart
+  const refreshCart = () => {
+    const currentMemberID = sessionStorage.getItem("userId");
+    setMemberID(currentMemberID);
+
+    if (currentMemberID) {
+      const newCartData = getCartData(currentMemberID);
+      dispatch({
+        type: "INIT_CART",
+        payload: {
+          products: newCartData.cartList,
+          total: newCartData.total,
+        },
+      });
+    } else {
+      // Clear cart state if no memberID is found
+      dispatch({
+        type: "INIT_CART",
+        payload: {
+          products: [],
+          total: 0,
+        },
+      });
+    }
+  };
 
   // Save the cart to localStorage whenever the cartList or total is updated
   useEffect(() => {
-    localStorage.setItem("cartList", JSON.stringify(state.cartList));
-    localStorage.setItem("total", JSON.stringify(state.total));
-  }, [state.cartList, state.total]);
+    if (memberID) {
+      localStorage.setItem(
+        `${memberID}_cartList`,
+        JSON.stringify(state.cartList)
+      );
+      localStorage.setItem(`${memberID}_total`, JSON.stringify(state.total));
+    }
+  }, [state.cartList, state.total, memberID]);
 
   function addToCart(product) {
-    // Check if the product is already in the cart
     const productExists = state.cartList.find((item) => item.id === product.id);
     if (productExists) {
-      // Show an error or info message
       console.log("Product is already in the cart.");
-      return; // Exit early to prevent duplicates
+      return;
     }
-  
-    // Proceed to add the product if it's not already in the cart
+
     const updatedList = state.cartList.concat(product);
     const updatedTotal = state.total + product.price;
-  
+
     dispatch({
       type: "ADD_TO_CART",
       payload: {
@@ -40,7 +82,7 @@ export const CartProvider = ({ children }) => {
       },
     });
   }
-  
+
   function removeFromCart(product) {
     const updatedList = state.cartList.filter((item) => item.id !== product.id);
     const updatedTotal = state.total - product.price;
@@ -70,6 +112,7 @@ export const CartProvider = ({ children }) => {
     addToCart,
     removeFromCart,
     clearCart,
+    refreshCart, // Expose the refreshCart function
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

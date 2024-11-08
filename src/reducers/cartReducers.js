@@ -24,6 +24,13 @@ export const cartReducer = (state, action) => {
                 cartList: [], // Reset cartList to an empty array
                 total: 0,     // Reset total to 0
             };
+        
+        case "INIT_CART":
+            return {
+                ...state,
+                cartList: payload.products, // Initialize with new cart list
+                total: payload.total,       // Initialize with new total
+            };
 
         default:
             throw new Error(`No case found for action type: ${type}`);

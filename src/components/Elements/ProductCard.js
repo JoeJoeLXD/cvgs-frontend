@@ -1,10 +1,8 @@
 // src/components/Elements/ProductCard.js
+
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart, useWishlist } from "../../context";
-import Rating from "./Rating";
-import RatingInput from "./RatingInput";
-//import { toast } from "react-toastify";
 
 const ProductCard = ({ product = {} }) => {
   const { cartList, addToCart, removeFromCart } = useCart();
@@ -13,11 +11,6 @@ const ProductCard = ({ product = {} }) => {
 
   const [inCart, setInCart] = useState(false);
   const [inWishlist, setInWishlist] = useState(false);
-  const [averageRating, setAverageRating] = useState(product.rate || 0);
-  const [numberOfRatings, setNumberOfRatings] = useState(
-    product.gameReviews?.$values.length || 0
-  );
-  const [userRating, setUserRating] = useState(product.userRating || 0);
 
   const {
     id,
@@ -26,31 +19,86 @@ const ProductCard = ({ product = {} }) => {
     thumbnailPath = "/assets/images/default-poster.png",
     price = 0,
     gamesInStock = true,
-    gameCategory = {},
+    gameCategory = { name: "Uncategorized" },
   } = product;
 
+  const categoryName = gameCategory.name || "Uncategorized";
+
   useEffect(() => {
-    const productInCart = cartList.find((item) => item.id === product.id);
-    const productInWishlist = wishlist.find((item) => item.id === product.id);
-    setInCart(Boolean(productInCart));
-    setInWishlist(Boolean(productInWishlist));
+    setInCart(cartList.some((item) => item.id === product.id));
+    setInWishlist(wishlist.some((item) => item.gameID === product.id));
   }, [cartList, wishlist, product.id]);
 
-  const handleRatingSubmit = (rating) => {
-    setUserRating(rating);
-    const newNumberOfRatings = numberOfRatings + 1;
-    const newAverageRating =
-      (averageRating * numberOfRatings + rating) / newNumberOfRatings;
-    setAverageRating(newAverageRating);
-    setNumberOfRatings(newNumberOfRatings);
-  };
-
-  const imagesList = ["10001", "10002", "10003", "10004", "10005"];
-
-  const isAuthenticated = !!sessionStorage.getItem("token");
+  const imagesList = [
+    "10001",
+    "10002",
+    "10003",
+    "10004",
+    "10005",
+    "Action_1",
+    "Action_2",
+    "Action_3",
+    "Action_4",
+    "Action_5",
+    "Action_6",
+    "Adventure_1",
+    "Adventure_2",
+    "Adventure_3",
+    "Adventure_4",
+    "Adventure_5",
+    "Adventure_6",
+    "Fighting_1",
+    "Fighting_2",
+    "Fighting_3",
+    "Fighting_4",
+    "Fighting_5",
+    "Fighting_6",
+    "Horror_1",
+    "Horror_2",
+    "Horror_3",
+    "Horror_4",
+    "Horror_5",
+    "Horror_6",
+    "Puzzle_1",
+    "Puzzle_2",
+    "Puzzle_3",
+    "Puzzle_4",
+    "Puzzle_5",
+    "Puzzle_6",
+    "Racing_1",
+    "Racing_2",
+    "Racing_3",
+    "Racing_4",
+    "Racing_5",
+    "Racing_6",
+    "RPG_1",
+    "RPG_2",
+    "RPG_3",
+    "RPG_4",
+    "RPG_5",
+    "RPG_6",
+    "Simulation_1",
+    "Simulation_2",
+    "Simulation_3",
+    "Simulation_4",
+    "Simulation_5",
+    "Simulation_6",
+    "Sports_1",
+    "Sports_2",
+    "Sports_3",
+    "Sports_4",
+    "Sports_5",
+    "Sports_6",
+    "Strategy_1",
+    "Strategy_2",
+    "Strategy_3",
+    "Strategy_4",
+    "Strategy_5",
+    "Strategy_6",
+  ];
 
   const handleAction = (actionFn) => {
-    if (!isAuthenticated) {
+    if (!sessionStorage.getItem("token")) {
       navigate("/login");
     } else {
       actionFn();
@@ -60,16 +108,19 @@ const ProductCard = ({ product = {} }) => {
   const handleToggleWishlist = () => {
     if (inWishlist) {
       handleAction(() => {
-        removeFromWishlist(product.id);
+        console.log(product);
+        let wishListItem = wishlist.find((item) => item.gameID === product.id);
+        removeFromWishlist(wishListItem.wishListID);
         setInWishlist(false);
-        //toast.success("Removed from wishlist!", { autoClose: 1500 });
       });
     } else {
-      handleAction(() => {
-        addToWishlist(product);
-        setInWishlist(true);
-        //toast.success("Added to wishlist!", { autoClose: 1500 });
-      });
+      // Prevent adding if already in wishlist
+      if (!inWishlist) {
+        handleAction(() => {
+          addToWishlist(product);
+          setInWishlist(true);
+        });
+      }
     }
   };
 
@@ -80,7 +131,7 @@ const ProductCard = ({ product = {} }) => {
           className="rounded-t-lg w-full h-64 object-cover"
           src={
             thumbnailPath ||
-            `/assets/images/${imagesList[Math.floor(Math.random() * 5)]}.avif`
+            `/assets/images/${imagesList[Math.floor(Math.random() * 65)]}.avif`
           }
           alt={gameName}
         />
@@ -95,20 +146,8 @@ const ProductCard = ({ product = {} }) => {
           {overview}
         </p>
         <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3">
-          Category: {gameCategory?.name || "Unknown Category"}
+          Category: {categoryName}
         </p>
-        <div className="flex items-center my-2">
-          <Rating rating={averageRating} numberOfRatings={numberOfRatings} />
-        </div>
-        <div className="flex items-center my-2">
-          <p className="text-lg font-semibold text-gray-900 dark:text-slate-200 mb-2">
-            Rate this game:
-          </p>
-          <RatingInput
-            currentRating={userRating}
-            onSubmit={handleRatingSubmit}
-          />
-        </div>
         <div className="flex justify-between items-center">
           <span className="text-2xl dark:text-gray-200">
             <span>$</span>
@@ -148,7 +187,6 @@ const ProductCard = ({ product = {} }) => {
               </button>
             )}
 
-            {/* Wishlist Button */}
             <button
               onClick={handleToggleWishlist}
               className={`inline-flex items-center justify-center py-2 px-3 text-sm font-medium text-center rounded-lg text-white ${

@@ -119,18 +119,17 @@ const AdminReviews = () => {
         throw new Error(`Failed to approve review: ${response.statusText}`);
       }
 
-      setReviews(
-        reviews.map((review) =>
-          review.reviewID === reviewId ? { ...review, approved: true } : review
-        )
-      );
-      toast.success("Review approved successfully.");
-    } catch (error) {
-      console.error("Error approving review:", error);
-      toast.error("Failed to approve review. Please try again later.");
-    }
-    setActionLoading(false);
-  };
+       // Remove the approved review from the list
+       setReviews(reviews.filter((review) => review.reviewID !== reviewId));
+       setSelectedReview(null);
+ 
+       toast.success("Review approved successfully.");
+     } catch (error) {
+       console.error("Error approving review:", error);
+       toast.error("Failed to approve review. Please try again later.");
+     }
+     setActionLoading(false);
+   };
 
   const getReviewGameName = async (review) => {
     try {

@@ -14,8 +14,12 @@ const PreferencesPage = () => {
   const [memberPreferenceId, setMemberPreferenceId] = useState(null);
 
   // Local state for managing current selections
-  const [selectedPlatform, setSelectedPlatform] = useState(favoritePlatforms[0] || "");
-  const [selectedCategory, setSelectedCategory] = useState(favoriteCategories[0] || "");
+  const [selectedPlatform, setSelectedPlatform] = useState(
+    favoritePlatforms[0] || ""
+  );
+  const [selectedCategory, setSelectedCategory] = useState(
+    favoriteCategories[0] || ""
+  );
   const [selectedLanguage, setSelectedLanguage] = useState(language || "");
 
   useEffect(() => {
@@ -75,8 +79,9 @@ const PreferencesPage = () => {
           );
 
         const data = await response.json();
-        if (data && data.$values && data.$values.length > 0) {
-          const preference = data.$values[0];
+        const values = data.$values.filter((p) => p.memberId === memberId);
+        if (values && values.length > 0) {
+          const preference = values[0];
           setMemberPreferenceId(preference.id);
           setSelectedPlatform(preference.favoritePlatform.name);
           setSelectedCategory(preference.favoriteGameCategory.name);
