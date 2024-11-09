@@ -3,11 +3,13 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { getSession } from "../services/authService"; // To get user session
+import { useNavigate } from "react-router-dom"; // Import useNavigate from react-router-dom
 
 const EventsPage = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [registeredEvents, setRegisteredEvents] = useState([]); // Store registered events
+  const navigate = useNavigate(); // Initialize navigate
 
   // Fetch existing events
   useEffect(() => {
@@ -88,6 +90,7 @@ const EventsPage = () => {
 
     if (!MemberId) {
       toast.error("You must be logged in to register for an event.");
+      navigate("/login"); // Redirect to login page if not logged in
       return;
     }
 
