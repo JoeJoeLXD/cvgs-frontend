@@ -89,7 +89,7 @@ const EventsPage = () => {
     const MemberId = getSession("userId");
 
     if (!MemberId) {
-      toast.error("You must be logged in to register for an event.");
+      //toast.error("You must be logged in to register for an event.");
       navigate("/login"); // Redirect to login page if not logged in
       return;
     }
@@ -130,7 +130,7 @@ const EventsPage = () => {
     const MemberId = getSession("userId");
 
     if (!MemberId) {
-      toast.error("You must be logged in to cancel a registration.");
+      //toast.error("You must be logged in to cancel a registration.");
       return;
     }
 

@@ -14,7 +14,7 @@ const Login = ({ setUserEmail }) => {
   const passwordRef = useRef();
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
-  const { refreshCart } = useCart(); // Import the useCart hook
+  const { refreshCart } = useCart(); 
   const { fetchWishlist } = useWishlist();
 
   // State to track login attempts
@@ -30,23 +30,23 @@ const Login = ({ setUserEmail }) => {
       });
       return;
     }
-
+  
     try {
       const authDetail = {
         email: emailRef.current.value,
         password: passwordRef.current.value,
       };
-
+  
       const data = await login(authDetail);
-
+  
       if (data.accessToken) {
         sessionStorage.setItem("token", data.accessToken);
         sessionStorage.setItem("userId", data.user.id);
         setUserEmail(data.user.email);
-
+  
         refreshCart(); // Refresh the cart after login
         fetchWishlist();
-
+  
         setTimeout(() => {
           navigate("/");
         }, 300);
@@ -59,16 +59,26 @@ const Login = ({ setUserEmail }) => {
       }
     } catch (error) {
       setLoginAttempts((prev) => prev + 1);
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "An error occurred during login. Please try again.";
+  
+      let errorMessage = "An error occurred during login. Please confirm in your email link.";
+  
+      if (error.response?.data?.error) {
+        // Use the error message from the server if available
+        errorMessage = error.response.data.error;
+  
+        // Specific message for unconfirmed emails
+        if (errorMessage.toLowerCase().includes("confirm your email")) {
+          errorMessage = "Please confirm in your email link.";
+        }
+      }
+  
       toast.error(errorMessage, {
         closeButton: true,
         position: "bottom-center",
       });
     }
   }
+  
 
   async function handleResetPassword() {
     try {
