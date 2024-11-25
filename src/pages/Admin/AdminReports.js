@@ -648,7 +648,7 @@ const AdminReports = () => {
   };
 
   return (
-    <div className="container mx-auto max-w-6xl px-0 py-4 dark:bg-gray-800">
+    <div className="container mx-auto max-w-6xl px-6 py-4 dark:bg-gray-800">
       <h1 className="text-2xl font-semibold my-4 dark:text-white">CVGS Reports</h1>
       <p className="dark:text-gray-300">Select a report below to generate and download the PDF.</p>
       <div className="mt-4">

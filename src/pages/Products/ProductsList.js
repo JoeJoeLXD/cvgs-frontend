@@ -49,7 +49,7 @@ Object.keys(groupedProducts).forEach((category) => {
   return (
     <main>
       <section className="my-5">
-        <div className="my-5 flex justify-between">
+        <div className="my-5 px-6 flex justify-between">
           <span className="text-2xl font-semibold dark:text-slate-100 mb-5">
             All Games ({products.length})
           </span>

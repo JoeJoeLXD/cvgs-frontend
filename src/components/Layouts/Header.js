@@ -55,7 +55,7 @@ const Header = () => {
     <header className="bg-white dark:bg-gray-800 shadow">
       {" "}
       {/* Adjusted to a slightly lighter gray in dark mode */}
-      <nav className="container mx-auto max-w-6xl px-0 flex justify-between items-center py-3">
+      <nav className="container mx-auto max-w-6xl px-6 flex justify-between items-center py-3">
         <div className="flex items-center">
           <Link to="/" className="flex items-center">
             <img src={Logo} className="h-10 w-10 mr-3" alt="Team Logo" />

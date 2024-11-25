@@ -114,7 +114,7 @@ const Login = ({ setUserEmail }) => {
   }
 
   return (
-    <main>
+    <main className="container mx-auto max-w-5xl px-0 sm:px-6 lg:px-8 py-6">
       <section>
         <p className="text-2xl text-center font-semibold dark:text-slate-100 my-10 underline underline-offset-8">
           Login

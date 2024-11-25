@@ -43,7 +43,7 @@ const FriendsAndFamily = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
+    <main className="container mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-6">
       <h1 className="text-3xl font-bold mb-6 dark:text-white">
         Friends and Family List
       </h1>
@@ -101,7 +101,7 @@ const FriendsAndFamily = () => {
           </ul>
         )}
       </div>
-    </div>
+    </main>
   );
 };
 

@@ -7,7 +7,7 @@ import Logo from "../assets/logo.png"
 const PageNotFound = () => {
   useTile("Page Not Found");
   return (
-    <main>
+    <main className="container mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-6">
       <section className="flex flex-col justify-center px-2">
             <div className="flex flex-col items-center my-4">
                 <p className="text-7xl text-gray-700 font-bold my-10 dark:text-white text-center">404, Oops!</p>

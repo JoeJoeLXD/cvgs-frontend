@@ -24,7 +24,7 @@ const Navbar = () => {
 
   return (
     <nav className="bg-gray-100 dark:bg-gray-900 py-4">
-      <div className="container mx-auto max-w-6xl px-0 flex justify-between items-center">
+      <div className="container mx-auto max-w-6xl px-6 flex justify-between items-center">
         {/* Main logo and link */}
         <NavLink
           to="/"

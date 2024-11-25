@@ -180,7 +180,7 @@ const PreferencesPage = () => {
   };
 
   return (
-    <div className="container mx-auto max-w-6xl px-0 py-4 dark:bg-gray-800">
+    <div className="container mx-auto max-w-6xl px-6 py-4 dark:bg-gray-800">
       <h1 className="text-2xl font-bold mb-6 dark:text-white">Preferences</h1>
 
       {/* Favorite Platforms */}

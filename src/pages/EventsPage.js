@@ -173,7 +173,7 @@ const EventsPage = () => {
   }
 
   return (
-    <div className="container mx-auto max-w-6xl px-0 py-4 dark:bg-gray-800">
+    <div className="container mx-auto max-w-6xl px-6 py-4 dark:bg-gray-800">
       <h2 className="text-2xl font-semibold mb-6 dark:text-white">
         Upcoming Events
       </h2>

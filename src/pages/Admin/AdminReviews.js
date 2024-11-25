@@ -155,7 +155,7 @@ const AdminReviews = () => {
   }
 
   return (
-    <div className="container mx-auto max-w-6xl px-4 py-6">
+    <div className="container mx-auto max-w-6xl px-6 py-6">
       <h1 className="text-2xl font-semibold my-4 dark:text-white">
         Manage Game Reviews
       </h1>

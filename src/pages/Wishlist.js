@@ -156,7 +156,7 @@ const Wishlist = () => {
   }
 
   return (
-    <div className="container mx-auto max-w-6xl px-0 py-4 dark:bg-gray-800">
+    <div className="container mx-auto max-w-6xl px-6 py-4 dark:bg-gray-800">
       <h1 className="text-3xl font-bold mb-6 dark:text-slate-100">
         {isOwnWishlist ? "Your Wishlist" : "Friend's Wishlist"}
       </h1>

@@ -155,7 +155,7 @@ const AdminGames = () => {
   }
 
   return (
-    <div className="container mx-auto max-w-6xl px-0 py-4 dark:bg-gray-800">
+    <div className="container mx-auto max-w-6xl px-6 py-4 dark:bg-gray-800">
       <button
         className="bg-blue-500 text-white px-6 py-3 rounded-lg mb-6 hover:bg-blue-600 transition duration-150 dark:bg-blue-700 dark:hover:bg-blue-600"
         onClick={openAddModal}
