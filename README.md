@@ -14,11 +14,11 @@ Follow these steps to set up the project locally.
 
 ```sh
 # Clone the backend
-git clone https://github.com/Team-GameHub/cvgs-backend.git
+git clone https://github.com/JoeJoeLXD/cvgs-backend.git
 cd cvgs-backend
 
 # Clone the frontend
-git clone https://github.com/Team-GameHub/cvgs-frontend.git
+git clone https://github.com/JoeJoeLXD/cvgs-frontend.git
 cd cvgs-frontend
 ```
 
