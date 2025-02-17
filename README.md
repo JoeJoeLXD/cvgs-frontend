@@ -1,70 +1,124 @@
-# Getting Started with Create React App
+# Conestoga Virtual Game Store
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## About the Project
 
-## Available Scripts
+The **Conestoga Virtual Game Store (CVGS)** is an online gaming marketplace where users can browse, purchase, and manage games. It provides personalized game recommendations, an engaging shopping experience, and exclusive access to the **CVGS Insiders Club**.
 
-In the project directory, you can run:
+This project consists of a **React frontend** and an **ASP.NET Core backend** with a **Microsoft SQL Server database**.
 
-### `npm start`
+## Getting Started
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Follow these steps to set up the project locally.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 1. Clone the Repositories
 
-### `npm test`
+```sh
+# Clone the backend
+git clone https://github.com/Team-GameHub/cvgs-backend.git
+cd cvgs-backend
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+# Clone the frontend
+git clone https://github.com/Team-GameHub/cvgs-frontend.git
+cd cvgs-frontend
+```
 
-### `npm run build`
+### 2. Install Dependencies
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+#### Frontend
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```sh
+cd cvgs-frontend
+npm install
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+#### Backend
 
-### `npm run eject`
+```sh
+cd ../cvgs-backend
+dotnet restore
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### 3. Setup Database
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Ensure you have **Microsoft SQL Server** installed and running. Then:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+1. Open **SQL Server Management Studio (SSMS)** and execute:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```sql
+CREATE DATABASE CVGS;
+```
 
-## Learn More
+2. Apply migrations:
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```sh
+cd ../cvgs-backend
+dotnet ef database update
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### 4. Run the Application
 
-### Code Splitting
+#### Start Frontend
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+```sh
+cd ../cvgs-frontend
+npm start
+```
 
-### Analyzing the Bundle Size
+#### Start Backend
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+```sh
+cd ../cvgs-backend
+dotnet run
+```
 
-### Making a Progressive Web App
+The application should now be running at:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+- Frontend: `http://localhost:3000`
+- Backend API: `http://localhost:7245`
 
-### Advanced Configuration
+## Deployment Instructions
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+### Backend Deployment (IIS)
 
-### Deployment
+1. Publish the application:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+```sh
+dotnet publish -c Release -o ./publish
+```
 
-### `npm run build` fails to minify
+2. Copy the contents of `publish` to the IIS server and configure it as a new site.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### Frontend Deployment
+
+1. Build the React application:
+
+```sh
+npm run build
+```
+
+2. Copy the contents of `build` to the web server and configure IIS.
+
+## License
+
+This project is licensed under the **MIT License**. We chose MIT because it allows flexibility for others to use, modify, and distribute our code while keeping attribution to the original authors.
+
+## Issue Tracker
+
+We are currently tracking issues in the repository. An example issue:
+
+- **Enhancement:** Improve UI responsiveness for mobile devices.
+
+## Wiki: Source Control & Versioning Strategy
+
+We are using **Git** as our version control system hosted on GitHub. The top three reasons for choosing Git over other tools:
+
+1. **Distributed Version Control** – Enables multiple developers to work efficiently without conflicts.
+2. **Branching & Merging** – Allows structured development with feature branches.
+3. **Robust Community & Integration** – Supports CI/CD and integrates well with tools like GitHub Actions.
+
+For more details, visit the **Wiki** section of this repository.
+
+---
+
+**Contributors:** Xiangdong Li, Sheng Xing
+**Date:** 2024-12-06
